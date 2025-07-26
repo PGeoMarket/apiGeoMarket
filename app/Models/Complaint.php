@@ -9,4 +9,7 @@ class Complaint extends Model
     public function Rol(){
         return $this->belongsTo('App\Models\Rol');
     }
+    public function Publication(){
+        return $this->belongsTo('App\Models\Publication');
+    }
 }
