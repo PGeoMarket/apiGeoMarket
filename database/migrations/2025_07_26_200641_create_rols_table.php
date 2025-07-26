@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('rols', function (Blueprint $table) {
             $table->id();
+            $table->String('tipo');
+            //foranea de usuario
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')->onDelete('set null');
             $table->timestamps();
         });
     }
