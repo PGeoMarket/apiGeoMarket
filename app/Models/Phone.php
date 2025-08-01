@@ -1,0 +1,14 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Phone extends Model
+{
+    public function seller()  {
+        return $this->belongsTo(seller::class);
+    }
+
+    protected $fillable=['numero_telefono','seller_id'];
+}
