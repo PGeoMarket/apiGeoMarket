@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Publication extends Model
 {
@@ -18,25 +19,25 @@ class Publication extends Model
     //en la asignacion masiva supongo que no son necesarias las fechas
 
     protected $allowIncluded = [
-        'seller', 
-        'category', 
-        'comments', 
+        'seller',
+        'category',
+        'comments',
         'favorites', //favorite puede cambiar el nombre del modelo a futuro
-        'complaints', 
+        'complaints',
         'chats'
-    ]; 
+    ];
 
     protected $allowFilter = [
-        'id', 
-        'titulo', 
-        'seller_id', 
-        'category_id', 
-        'precio']; 
+        'id',
+        'titulo',
+        'seller_id',
+        'category_id',
+        'precio'];
 
     protected $allowSort = [
-        'id', 
-        'titulo', 
-        'precio', 
+        'id',
+        'titulo',
+        'precio',
         'fecha_actualizacion' //filtrar por actualizacion o publicacion?
     ];
 
@@ -53,18 +54,18 @@ class Publication extends Model
         return $this->hasMany(Comment::class);
     }
 
-    public function favorites() {
-        return $this->hasMany(Favorite::class);
+    public function favoritePublication() {
+        return $this->belongsToMany(User::class);
     }
 
      public function complaints() {
         return $this->hasMany(Complaint::class);
     }
 
-     public function chats() {
+/*      public function chats() {
         return $this->hasMany(Chat::class);
     }
-
+ */
     //Scopes
     public function scopeIncluded(Builder $query) {
         if (empty($this->allowIncluded) || empty(request("included"))) {
@@ -76,7 +77,7 @@ class Publication extends Model
         $allowIncluded = collect($this->allowIncluded);
 
         foreach ($relations as $key => $relationship) {
-            
+
             if (!$allowIncluded->contains($relationship)) {
                 unset($relations[$key]);
             }
@@ -95,7 +96,7 @@ class Publication extends Model
         $allowFilter = collect($this->allowFilter);
 
         foreach ($filters as $filter => $value) {
-            
+
             if ($allowFilter->contains($filter)) {
                 $query->WHERE($filter, 'LIKE', '%'.$value.'%');
             }
@@ -113,7 +114,7 @@ class Publication extends Model
         $allowSort = collect($this->allowSort);
 
         foreach ($sortFields as $sortField) {
-            
+
             $direction = 'asc';
 
             if (substr($sortField, 0, 1) === "-") {
@@ -132,14 +133,14 @@ class Publication extends Model
     }
 
     public function scopeGetOrPaginate(Builder $query) {
-        
+
         if (request('perPage')) {
             $perPage = intval(request('perPage'));
 
             if ($perPage) {
                 return $query->paginate($perPage);
             }
-        } 
+        }
 
         return $query->get();
     }

@@ -12,7 +12,7 @@ class ReasonComplaint extends Model
 
     //Relaciones
     public function complaints() {
-        return $this->belongsToMany(Complaint::class);
+        return $this->hasMany(Complaint::class);
     }
 
 

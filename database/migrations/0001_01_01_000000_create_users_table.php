@@ -25,15 +25,14 @@ return new class extends Migration
             $table->double('longitud')->nullable();
             $table->text('direccion_completa')->nullable();
             $table->boolean('activo')->default(true);
-            $table->timestamps(); 
+            $table->timestamps();
 
             $table->unsignedSmallInteger('id_rol')->nullable();
 
-        $table->foreign('id_rol')
-        ->references('id')
-        ->on('roles')
-        ->onDelete('cascade');
-
+            $table->foreign('id_rol')
+                ->references('id')
+                ->on('roles')
+                ->onDelete('cascade');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
