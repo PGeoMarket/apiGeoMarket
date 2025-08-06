@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('complaints', function (Blueprint $table) {
+        Schema::create('complaints', function (Blueprint $table) {
             $table->id();
             $table->boolean('Estado');
-   
+            $table->String('descripcion_adicional');
             $table->timestamps();
 
             //foranea de usuario
@@ -27,7 +27,7 @@ return new class extends Migration
                 ->references('id')
                 ->on('publications')->onDelete('set null');
 
-                //foranea de ReasonComplaint
+            //foranea de ReasonComplaint
             $table->foreign('id_reason')
                 ->references('id')
                 ->on('publications')->onDelete('set null');
