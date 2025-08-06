@@ -9,9 +9,9 @@ class ReasonComplaintController extends Controller
 {
       //
     public function index()
-    {   
-        
-  /*    $reason_complaint = ReasonComplaint::all(); */
+    {
+
+        $reason_complaint = ReasonComplaint::all();
         return response()->json($reason_complaint);
     }
 
@@ -30,7 +30,7 @@ class ReasonComplaintController extends Controller
         ]);
 
         $reason_complaint = ReasonComplaint::create($data);
-        
+
         if (!$reason_complaint) {
             return response()->json([
                 'message' => 'No se pudo añadir el reason_complaint.'
@@ -45,7 +45,7 @@ class ReasonComplaintController extends Controller
 
     public function show()
     {
- 
+
     }
 
 

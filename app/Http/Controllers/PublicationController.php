@@ -9,7 +9,7 @@ class PublicationController extends Controller
 {
        //
     public function index()
-    {   
+    {
         //$publications=Publication::included()->get();
         //$publications=Publication::included()->filter()->get();
         //$publications=Publication::included()->filter()->sort()->get();
@@ -38,7 +38,7 @@ class PublicationController extends Controller
         ]);
 
         $publication = Publication::create($data);
-        
+
         if (!$publication) {
             return response()->json([
                 'message' => 'No se pudo crear la publicación.'
@@ -79,16 +79,16 @@ class PublicationController extends Controller
 
         $data['fecha_actualizacion'] = now();
 
-        $publication->update($data);
+        $Publication->update($data);
 
-        if (!$publication) {
+        if (!$Publication) {
             return response()->json([
                 'message' => 'No se pudo editar la publicación.'
             ], 400);
         } else {
             return response()->json([
             'message'     => 'Publicación actualizada correctamente.',
-            'publication' => $publication,
+            'publication' => $Publication,
         ]);
         }
 

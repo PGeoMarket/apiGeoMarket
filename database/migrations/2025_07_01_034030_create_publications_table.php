@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('publications', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->varchar('titulo', 255);
+            $table->string('titulo', 255);
             $table->integer('precio');
             $table->text('descripcion');
             $table->longtext('imagen');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id');    // id_categoria
 
             $table->foreign('seller_id')->references('id')->on('sellers')->onDelete('cascade');
-            $table->foreign('category_id')->references('id')->on('category')->onDelete('cascade');
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
         });
     }
 

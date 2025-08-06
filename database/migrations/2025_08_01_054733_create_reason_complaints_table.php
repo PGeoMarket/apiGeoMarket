@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('reason_complaints', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->varchar('motivo', 255);
+            $table->string('motivo', 255);
         });
     }
 

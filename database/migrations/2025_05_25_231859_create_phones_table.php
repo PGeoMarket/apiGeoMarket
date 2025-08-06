@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->integer('numero_telefono');
             $table->unsignedBigInteger('seller_id');
-            $table->foreign('seller_id')->references('id')->on('sellers')->onDelete('set null');
+            $table->foreign('seller_id')->references('id')->on('sellers')->onDelete('cascade');
             $table->timestamps();
         });
     }

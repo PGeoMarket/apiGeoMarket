@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('roles', function (Blueprint $table) {
-            $table->id();
-            $table->String('nombre');
+            $table->smallIncrements('id'); // smallint unsigned autoincrement
+            $table->string('nombre', 50);
             $table->json('permisos');
         });
     }

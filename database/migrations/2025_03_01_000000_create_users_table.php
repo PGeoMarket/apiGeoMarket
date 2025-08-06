@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->bigIncrements('id');
+
             $table->string('primer_nombre', 100);
             $table->string('segundo_nombre', 100)->nullable();
             $table->string('primer_apellido', 100);
@@ -20,19 +21,19 @@ return new class extends Migration
             $table->longText('foto')->nullable();
             $table->string('email', 255)->unique();
             $table->string('password_hash', 255);
-            $table->smallInteger('id_tipo_rol')->unsigned();
+
+            $table->unsignedSmallInteger('id_rol'); // Relación con roles
+            $table->foreign('id_rol')->references('id')->on('roles')->onDelete('cascade');
+
             $table->double('latitud')->nullable();
             $table->double('longitud')->nullable();
             $table->text('direccion_completa')->nullable();
             $table->boolean('activo')->default(true);
+
             $table->timestamps();
 
-            $table->unsignedSmallInteger('id_rol')->nullable();
-
-            $table->foreign('id_rol')
-                ->references('id')
-                ->on('roles')
-                ->onDelete('cascade');
+            // Índices adicionales según DBML
+            $table->index(['latitud', 'longitud'], 'User_index_0');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -56,8 +57,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };
