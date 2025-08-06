@@ -15,13 +15,12 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('nombre', 255);
+            $table->string('nombre_tienda', 255);
             $table->text('descripcion')->nullable();
             $table->longText('foto_portada')->nullable();
             $table->double('latitud_tienda')->nullable();
             $table->double('longitud_tienda')->nullable();
             $table->text('direccion_tienda')->nullable();
-            $table->timestamp('fecha_creacion')->nullable();
             $table->boolean('activo')->default(true);
 
             $table->timestamps();

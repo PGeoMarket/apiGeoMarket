@@ -19,8 +19,6 @@ return new class extends Migration
             $table->text('descripcion');
             $table->longtext('imagen');
             $table->boolean('visibilidad')->default(true);
-            $table->dateTime('fecha_publicacion')->useCurrent();
-            $table->dateTime('fecha_actualizacion')->nullable(); //modificacion de la publicacion
             $table->unsignedBigInteger('seller_id');   // o seria user_id?
             $table->unsignedBigInteger('category_id');    // id_categoria
 
