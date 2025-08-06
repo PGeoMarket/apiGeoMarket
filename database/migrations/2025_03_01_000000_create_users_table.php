@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->bigIncrements('id');
-
             $table->string('primer_nombre', 100);
             $table->string('segundo_nombre', 100)->nullable();
             $table->string('primer_apellido', 100);
@@ -31,9 +30,6 @@ return new class extends Migration
             $table->boolean('activo')->default(true);
 
             $table->timestamps();
-
-            // Índices adicionales según DBML
-            $table->index(['latitud', 'longitud'], 'User_index_0');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
