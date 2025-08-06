@@ -12,23 +12,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('complaints', function (Blueprint $table) {
-            // PRIMERO: Todas las columnas principales
             $table->id();
-            $table->boolean('estado');
-            $table->text('descripcion_adicional')->nullable();
+            $table->boolean('Estado');
+            $table->String('descripcion_adicional');
+            $table->timestamps();
 
-            // SEGUNDO: Todas las columnas de claves foráneas
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('publication_id')->nullable();
             $table->unsignedBigInteger('reason_id')->nullable();
 
-            // TERCERO: Timestamps
-            $table->timestamps();
+            //foranea de usuario
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')->onDelete('set null');
 
-            // CUARTO: Al final, todas las relaciones foráneas
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('publication_id')->references('id')->on('publications')->onDelete('set null');
-            $table->foreign('reason_id')->references('id')->on('reason_complaints')->onDelete('set null'); // Comentado
+            //foranea de publication
+            $table->foreign('publication_id')
+                ->references('id')
+                ->on('publications')->onDelete('set null');
+
+            //foranea de ReasonComplaint
+            $table->foreign('reason_id')
+                ->references('id')
+                ->on('reason_complaints')->onDelete('set null');
         });
     }
 
