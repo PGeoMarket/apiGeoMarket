@@ -22,10 +22,13 @@ class Publication extends Model
 
     protected $allowIncluded = [
         'seller',
+        'seller.user',
         'category',
         'comments',
-        'favorites', //favorite puede cambiar el nombre del modelo a futuro
+        'comments.user',
+        'userswhofavorited', //favorite puede cambiar el nombre del modelo a futuro
         'complaints',
+        'complaints.reasoncomplaint',
         'chats'
     ];
 
@@ -60,7 +63,7 @@ class Publication extends Model
         return $this->hasMany(Comment::class);
     }
 
-    public function favoritePublication()
+    public function usersWhoFavorited()
     {
         return $this->belongsToMany(User::class);
     }
