@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Phone extends Model
 {
     public function seller()  {
-        return $this->belongsTo(seller::class);
+        return $this->belongsTo(Seller::class);
     }
 
     protected $fillable=['numero_telefono','seller_id'];
