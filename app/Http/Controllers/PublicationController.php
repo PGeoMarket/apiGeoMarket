@@ -7,17 +7,17 @@ use Illuminate\Http\Request;
 
 class PublicationController extends Controller
 {
-       //
+    //
     public function index()
     {
         //$publications=Publication::included()->get();
         //$publications=Publication::included()->filter()->get();
         //$publications=Publication::included()->filter()->sort()->get();
-        $publications=Publication::included()->filter()->sort()->GetOrPaginate();
+        $publications = Publication::included()->filter()->sort()->GetOrPaginate();
         return response()->json($publications);
 
 
-  /*       $publications = Publication::all(); */
+        /*       $publications = Publication::all(); */
     }
 
     public function create()
@@ -34,8 +34,11 @@ class PublicationController extends Controller
             'precio'      => 'required|numeric|min:0',
             'descripcion' => 'nullable|string',
             'imagen'      => 'required|string',
+            'visibilidad' => 'boolean',
+            'seller_id'   => 'required|exists:sellers,id',
             'category_id' => 'required|exists:categories,id',
         ]);
+
 
         $publication = Publication::create($data);
 
@@ -74,6 +77,7 @@ class PublicationController extends Controller
             'precio'      => 'required|numeric|min:0',
             'descripcion' => 'nullable|string',
             'imagen'      => 'required|string',
+            'visibilidad' =>  'boolean',
             'category_id' => 'required|exists:categories,id',
         ]);
 
@@ -87,11 +91,10 @@ class PublicationController extends Controller
             ], 400);
         } else {
             return response()->json([
-            'message'     => 'Publicación actualizada correctamente.',
-            'publication' => $Publication,
-        ]);
+                'message'     => 'Publicación actualizada correctamente.',
+                'publication' => $Publication,
+            ]);
         }
-
     }
 
     public function destroy(Publication $publication)
@@ -106,7 +109,5 @@ class PublicationController extends Controller
                 'error' => 'No se pudo eliminar la publicación.'
             ], 400); // 400 Bad Request = algo falló en la operación
         }
-
     }
-
 }

@@ -7,15 +7,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Publication extends Model
 {
-     //
+    //
     protected $fillable = [
         'titulo',
         'precio',
         'descripcion',
         'imagen',
         'visibilidad',
-        'category_id',
+        'seller_id',
+        'category_id'
     ];
+
     //en la asignacion masiva supongo que no son necesarias las fechas
 
     protected $allowIncluded = [
@@ -32,7 +34,8 @@ class Publication extends Model
         'titulo',
         'seller_id',
         'category_id',
-        'precio'];
+        'precio'
+    ];
 
     protected $allowSort = [
         'id',
@@ -42,37 +45,43 @@ class Publication extends Model
     ];
 
     //Relaciones
-    public function seller() {
+    public function seller()
+    {
         return $this->belongsTo(Seller::class);
     }
 
-    public function category() {
+    public function category()
+    {
         return $this->belongsTo(Category::class);
     }
 
-    public function comments() {
+    public function comments()
+    {
         return $this->hasMany(Comment::class);
     }
 
-    public function favoritePublication() {
+    public function favoritePublication()
+    {
         return $this->belongsToMany(User::class);
     }
 
-     public function complaints() {
+    public function complaints()
+    {
         return $this->hasMany(Complaint::class);
     }
 
-/*      public function chats() {
+    /*      public function chats() {
         return $this->hasMany(Chat::class);
     }
  */
     //Scopes
-    public function scopeIncluded(Builder $query) {
+    public function scopeIncluded(Builder $query)
+    {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;
         }
 
-        $relations = explode(',',request('included'));
+        $relations = explode(',', request('included'));
 
         $allowIncluded = collect($this->allowIncluded);
 
@@ -86,7 +95,8 @@ class Publication extends Model
         $query->with($relations);
     }
 
-    public function scopeFilter(Builder $query) {
+    public function scopeFilter(Builder $query)
+    {
         if (empty($this->allowFilter) || empty(request("filter"))) {
             return;
         }
@@ -98,13 +108,13 @@ class Publication extends Model
         foreach ($filters as $filter => $value) {
 
             if ($allowFilter->contains($filter)) {
-                $query->WHERE($filter, 'LIKE', '%'.$value.'%');
+                $query->WHERE($filter, 'LIKE', '%' . $value . '%');
             }
         }
-
     }
 
-    public function scopeSort(Builder $query) {
+    public function scopeSort(Builder $query)
+    {
 
         if (empty($this->allowSort) || empty(request("sort"))) {
             return;
@@ -128,11 +138,10 @@ class Publication extends Model
                 $query->orderBy($sortField, $direction);
             }
         }
-
-
     }
 
-    public function scopeGetOrPaginate(Builder $query) {
+    public function scopeGetOrPaginate(Builder $query)
+    {
 
         if (request('perPage')) {
             $perPage = intval(request('perPage'));

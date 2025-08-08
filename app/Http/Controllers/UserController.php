@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -60,5 +61,14 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function favoritos($id){
+        $usuario = User::with('favoritePublications')->findOrFail($id);
+
+        return response()->json([
+            'usuario_id' => $usuario->id,
+            'favoritos' => $usuario->favoritePublications
+        ]);
     }
 }
