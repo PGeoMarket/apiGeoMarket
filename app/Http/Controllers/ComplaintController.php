@@ -12,7 +12,8 @@ class ComplaintController extends Controller
      */
     public function index()
     {
-        //
+        $complaints = Complaint::included()->filter()->sort()->GetOrPaginate();
+        return response()->json($complaints);
     }
 
     /**
@@ -28,7 +29,27 @@ class ComplaintController extends Controller
      */
     public function store(Request $request)
     {
-        //
+         $data = $request->validate([
+            'estado'      => 'required|boolean',
+            'descripcion_adicional'      => 'required|string',
+            'user_id'   => 'required|exists:users,id',
+            'publication_id' => 'required|exists:publications,id',
+            'reason_id' => 'required|exists:reasons,id',
+        ]);
+
+
+        $complaint = Complaint::create($data);
+
+        if (!$complaint) {
+            return response()->json([
+                'message' => 'No se pudo enviar la queja.'
+            ], 400);
+        } else {
+            return response()->json([
+                'message'     => 'Queja enviada correctamente.',
+                'complaint' => $complaint,
+            ], 201);
+        }
     }
 
     /**
@@ -36,7 +57,11 @@ class ComplaintController extends Controller
      */
     public function show(Complaint $complaint)
     {
-        //
+        $complaint->load(['user', 'publication', 'reason']);
+
+        return response()->json([
+            'complaint' => $complaint
+        ]);
     }
 
     /**
@@ -52,7 +77,28 @@ class ComplaintController extends Controller
      */
     public function update(Request $request, Complaint $complaint)
     {
-        //
+        $data = $request->validate([
+            'estado'      => 'required|boolean',
+            'descripcion_adicional'      => 'required|string',
+            'user_id'   => 'required|exists:users,id',
+            'publication_id' => 'required|exists:publications,id',
+            'reason_id' => 'required|exists:reasons,id',
+        ]);
+
+        $data['fecha_actualizacion'] = now();
+
+        $complaint->update($data);
+
+        if (!$complaint) {
+            return response()->json([
+                'message' => 'No se pudo editar la queja.'
+            ], 400);
+        } else {
+            return response()->json([
+                'message'     => 'Queja actualizada correctamente.',
+                'complaint' => $complaint,
+            ]);
+        }
     }
 
     /**
@@ -60,6 +106,14 @@ class ComplaintController extends Controller
      */
     public function destroy(Complaint $complaint)
     {
-        //
+        if ($complaint->delete()) {
+            return response()->json([
+                'message' => 'Queja eliminada correctamente.'
+            ], 204); // 204 No Content = éxito sin datos
+        } else {
+            return response()->json([
+                'error' => 'No se pudo eliminar la queja.'
+            ], 400); // 400 Bad Request = algo falló en la operación
+        }
     }
 }
