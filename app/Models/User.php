@@ -2,87 +2,140 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
-class User extends Authenticatable
+class User extends Model
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        'name',
+        'primer_nombre',
+        'segundo_nombre',
+        'primer_apellido',
+        'segundo_apellido',
+        'foto',
         'email',
-        'password',
+        'password_hash',
+        'rol_id',
+        'latitud',
+        'longitud',
+        'direccion_completa',
+        'activo'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password_hash'
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    // Relaciones permitidas en "included"
+    protected $allowIncluded = [
+        'rol',
+        'favoritePublications'
+    ];
 
-    public function role()
-    {
-        return $this->belongsTo(Role::class, 'id_rol');
-    }
+    // Campos permitidos en "filter"
+    protected $allowFilter = [
+        'id',
+        'primer_nombre',
+        'primer_apellido',
+        'email',
+        'rol_id',
+        'activo'
+    ];
 
-    public function comments()
+    // Campos permitidos en "sort"
+    protected $allowSort = [
+        'id',
+        'primer_nombre',
+        'primer_apellido',
+        'email',
+        'created_at',
+        'updated_at'
+    ];
+
+ 
+    public function rol()
     {
-        return $this->hasMany(Comment::class, 'user_id');
+        return $this->belongsTo(Role::class, 'rol_id');
     }
 
     public function favoritePublications()
     {
-        return $this->belongsToMany(Publication::class);
+        return $this->belongsToMany(
+            Publication::class,
+            'favorites',       // Tabla pivote
+            'user_id',         // FK usuario
+            'publication_id'   // FK publicación
+        );
     }
 
-    public function complaints()
+
+
+    public function scopeIncluded(Builder $query)
     {
-        return $this->hasMany(Complaint::class, 'user_id');
+        if (empty($this->allowIncluded) || empty(request("included"))) {
+            return;
+        }
+
+        $relations = explode(',', request('included'));
+        $allowIncluded = collect($this->allowIncluded);
+
+        foreach ($relations as $key => $relationship) {
+            if (!$allowIncluded->contains($relationship)) {
+                unset($relations[$key]);
+            }
+        }
+
+        $query->with($relations);
     }
 
-/*     public function chats()
+    public function scopeFilter(Builder $query)
     {
-        return $this->hasMany(Chat::class, 'user_id');
+        if (empty($this->allowFilter) || empty(request("filter"))) {
+            return;
+        }
+
+        $filters = request('filter');
+        $allowFilter = collect($this->allowFilter);
+
+        foreach ($filters as $filter => $value) {
+            if ($allowFilter->contains($filter)) {
+                $query->where($filter, 'LIKE', '%' . $value . '%');
+            }
+        }
     }
 
-    public function sentMessages()
+    public function scopeSort(Builder $query)
     {
-        return $this->hasMany(Message::class, 'id_sender');
+        if (empty($this->allowSort) || empty(request("sort"))) {
+            return;
+        }
+
+        $sortFields = explode(',', request('sort'));
+        $allowSort = collect($this->allowSort);
+
+        foreach ($sortFields as $sortField) {
+            $direction = 'asc';
+
+            if (substr($sortField, 0, 1) === "-") {
+                $direction = 'desc';
+                $sortField = substr($sortField, 1);
+            }
+
+            if ($allowSort->contains($sortField)) {
+                $query->orderBy($sortField, $direction);
+            }
+        }
     }
 
-    public function supportChats()
+    public function scopeGetOrPaginate(Builder $query)
     {
-        return $this->hasMany(ChatSupport::class, 'user_id');
-    }
- */
-    public function seller()
-    {
-        return $this->hasOne(Seller::class, 'id_user');
+        if (request('perPage')) {
+            $perPage = intval(request('perPage'));
+            if ($perPage) {
+                return $query->paginate($perPage);
+            }
+        }
+
+        return $query->get();
     }
 }
