@@ -53,7 +53,9 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
-        //
+         return response()->json([
+            'role' => $role
+        ]);
     }
 
     /**
@@ -69,25 +71,7 @@ class RoleController extends Controller
      */
     public function update(Request $request, Role $role)
     {
-        $data = $request->validate([
-            'nombre'      => 'required|string|max:50',
-            'permisos'      => 'required|json',
-        ]);
-
-        $data['fecha_actualizacion'] = now();
-
-        $role->update($data);
-
-        if (!$role) {
-            return response()->json([
-                'message' => 'No se pudo editar el rol.'
-            ], 400);
-        } else {
-            return response()->json([
-                'message'     => 'Rol actualizado correctamente.',
-                'publication' => $role,
-            ]);
-        }
+//
     }
 
     /**
@@ -95,14 +79,6 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        if ($role->delete()) {
-            return response()->json([
-                'message' => 'Rol eliminada correctamente.'
-            ], 204); // 204 No Content = éxito sin datos
-        } else {
-            return response()->json([
-                'error' => 'No se pudo eliminar el rol.'
-            ], 400); // 400 Bad Request = algo falló en la operación
-        }
+        //
     }
 }
