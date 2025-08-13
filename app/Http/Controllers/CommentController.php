@@ -7,59 +7,58 @@ use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $comments = Comment::query()
+            ->when($request->user_id, fn($q) => $q->byUser($request->user_id))
+            ->when($request->publication_id, fn($q) => $q->byPublication($request->publication_id))
+            ->when($request->valor_estrella, fn($q) => $q->byStars($request->valor_estrella))
+            ->when($request->search, fn($q) => $q->search($request->search))
+            ->with(['user', 'publication'])
+            ->get();
+
+        return response()->json($comments);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'texto'           => 'required|string',
+            'valor_estrella'  => 'nullable|integer|min:1|max:5',
+            'user_id'         => 'required|exists:users,id',
+            'publication_id'  => 'required|exists:publications,id',
+        ]);
+
+        $comment = Comment::create($validated);
+
+        return response()->json($comment, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Comment $comment)
+    public function show($id)
     {
-        //
+        $comment = Comment::with(['user', 'publication'])->findOrFail($id);
+        return response()->json($comment);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Comment $comment)
+    public function update(Request $request, $id)
     {
-        //
+        $comment = Comment::findOrFail($id);
+
+        $validated = $request->validate([
+            'texto'          => 'string',
+            'valor_estrella' => 'nullable|integer|min:1|max:5',
+        ]);
+
+        $comment->update($validated);
+
+        return response()->json($comment);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Comment $comment)
+    public function destroy($id)
     {
-        //
-    }
+        $comment = Comment::findOrFail($id);
+        $comment->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Comment $comment)
-    {
-        //
+        return response()->json(['message' => 'Comentario eliminado correctamente']);
     }
 }
