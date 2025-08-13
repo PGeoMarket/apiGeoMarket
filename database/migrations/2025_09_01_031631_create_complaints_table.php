@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('complaints', function (Blueprint $table) {
             $table->id();
-            $table->boolean('Estado');
+            $table->boolean('estado');
             $table->String('descripcion_adicional');
             $table->timestamps();
 
