@@ -12,7 +12,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::included()->filter()->sort()->GetOrPaginate();
+        $roles = Role::all();
         return response()->json($roles);
     }
 
@@ -38,11 +38,11 @@ class RoleController extends Controller
 
         if (!$role) {
             return response()->json([
-                'message' => 'No se pudo asignar el rol.'
+                'message' => 'No se pudo crear el rol.'
             ], 400);
         } else {
             return response()->json([
-                'message'     => 'Rol asignado correctamente.',
+                'message'     => 'Rol creado correctamente.',
                 'role' => $role,
             ], 201);
         }

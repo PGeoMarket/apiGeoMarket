@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Seller extends Model
@@ -9,14 +10,33 @@ class Seller extends Model
 
     protected $fillable = [
         'user_id',
-        'nombre',
+        'nombre_tienda',      // Corregido para coincidir con la migración
         'descripcion',
         'foto_portada',
         'latitud_tienda',
         'longitud_tienda',
         'direccion_tienda',
-        'fecha_creacion',
         'activo'
+    ];
+
+    // Listas blancas
+    protected $allowIncluded = [
+        'user',
+        'phones',
+        'publications'
+    ];
+
+    protected $allowFilter = [
+        'nombre_tienda',
+        'activo',
+        'user_id'
+    ];
+
+    protected $allowSort = [
+        'id',
+        'nombre_tienda',
+        'activo',
+        'created_at'
     ];
 
     // Relación: Seller pertenece a un User
@@ -35,5 +55,74 @@ class Seller extends Model
     public function publications()
     {
         return $this->hasMany(Publication::class);
+    }
+
+        public function scopeIncluded(Builder $query)
+    {
+        if (empty($this->allowIncluded) || empty(request("included"))) {
+            return;
+        }
+
+        $relations = explode(',', request('included'));
+        $allowIncluded = collect($this->allowIncluded);
+
+        foreach ($relations as $key => $relationship) {
+            if (!$allowIncluded->contains($relationship)) {
+                unset($relations[$key]);
+            }
+        }
+
+        $query->with($relations);
+    }
+
+    public function scopeFilter(Builder $query)
+    {
+        if (empty($this->allowFilter) || empty(request("filter"))) {
+            return;
+        }
+
+        $filters = request('filter');
+        $allowFilter = collect($this->allowFilter);
+
+        foreach ($filters as $filter => $value) {
+            if ($allowFilter->contains($filter)) {
+                $query->where($filter, 'LIKE', '%' . $value . '%');
+            }
+        }
+    }
+
+    public function scopeSort(Builder $query)
+    {
+        if (empty($this->allowSort) || empty(request("sort"))) {
+            return;
+        }
+
+        $sortFields = explode(',', request('sort'));
+        $allowSort = collect($this->allowSort);
+
+        foreach ($sortFields as $sortField) {
+            $direction = 'asc';
+
+            if (substr($sortField, 0, 1) === "-") {
+                $direction = 'desc';
+                $sortField = substr($sortField, 1);
+            }
+
+            if ($allowSort->contains($sortField)) {
+                $query->orderBy($sortField, $direction);
+            }
+        }
+    }
+
+    public function scopeGetOrPaginate(Builder $query)
+    {
+        if (request('perPage')) {
+            $perPage = intval(request('perPage'));
+            if ($perPage) {
+                return $query->paginate($perPage);
+            }
+        }
+
+        return $query->get();
     }
 }

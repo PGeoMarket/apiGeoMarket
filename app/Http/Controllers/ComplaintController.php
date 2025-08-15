@@ -95,15 +95,25 @@ class ComplaintController extends Controller
         ]);
     }
 
-    public function destroy(Complaint $complaint)
+    public function destroy($id)
     {
-        try {
-            $complaint->delete();
-            // 200 con mensaje o 204 sin cuerpo; uso 200 para enviar mensaje.
-            return response()->json(['message' => 'Queja eliminada correctamente.'], 200);
-        } catch (\Exception $e) {
-            Log::error('Complaint delete error: '.$e->getMessage());
-            return response()->json(['error' => 'No se pudo eliminar la queja.'], 400);
-        }
+        $complaint = Complaint::find($id);
+
+    if (!$complaint) {
+        return response()->json([
+            'error' => 'queja no encontrada.'
+        ], 404);
+    }
+
+    if ($complaint->delete()) {
+        return response()->json([
+            'message' => 'queja eliminada correctamente.'
+        ], 200);
+    }
+
+    return response()->json([
+        'error' => 'No se pudo eliminar la queja.'
+    ], 400);
+    
     }
 }

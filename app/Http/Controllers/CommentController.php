@@ -56,9 +56,23 @@ class CommentController extends Controller
 
     public function destroy($id)
     {
-        $comment = Comment::findOrFail($id);
-        $comment->delete();
+        $comment = Comment::find($id);
 
-        return response()->json(['message' => 'Comentario eliminado correctamente']);
+    if (!$comment) {
+        return response()->json([
+            'error' => 'comentario no encontrada.'
+        ], 404);
     }
+
+    if ($comment->delete()) {
+        return response()->json([
+            'message' => 'comentario eliminada correctamente.'
+        ], 200);
+    }
+
+    return response()->json([
+        'error' => 'No se pudo eliminar el comentario.'
+    ], 400);
+    }
+    
 }

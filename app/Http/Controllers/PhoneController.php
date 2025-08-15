@@ -7,11 +7,13 @@ use Illuminate\Http\Request;
 
 class PhoneController extends Controller
 {
-    public function index()  {
-        $phone=Phone::all();
+    public function index()
+{
+    $phones = Phone::with('seller')->get();
 
-        return response()->json($phone);
-    }
+    return response()->json($phones);
+}
+
     /* public function create()  {
         $areas = Area::all();
         $trainingCenters = TrainingCenter::all();
@@ -19,33 +21,75 @@ class PhoneController extends Controller
         return view('teacher.create',compact('areas', 'trainingCenters'));
     } */
 
-    public function store(Request $request)  {
-        $phone=Phone::create($request->all());
+    public function store(Request $request)
+    {
+        $phone = Phone::create($request->all());
 
-        return response()->json($phone);
+        return response()->json([
+            'message' => 'Teléfono creado correctamente.',
+            'data' => $phone
+        ], 201);
     }
 
-    public function show($id) {
-        $phone = Phone::find($id);
+    public function show($id)
+    {
+        $phone = Phone::with('seller')->find($id);
 
-        return response()->json($phone);
+        if (!$phone) {
+            return response()->json([
+                'error' => 'Teléfono no encontrado.'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Teléfono encontrado.',
+            'data' => $phone
+        ], 200);
     }
 
-    /* public function update(Request $request,Teacher $teacher) {
+    public function update(Request $request, Phone $phone)
+{
+    $request->validate([
+        'numero_telefono' => 'required|integer', // ajusta min según tu formato
+        'seller_id'       => 'required|exists:sellers,id',
+    ]);
 
-        $teacher->update($request->all());
+    $phone->numero_telefono = $request->numero_telefono;
+    $phone->seller_id       = $request->seller_id;
+    $phone->save();
 
-        return redirect()->route('teacher.index');
+    return response()->json([
+        'message' => 'Teléfono actualizado correctamente.',
+        'data'    => $phone->load('seller')
+    ], 200);
+}
 
-    } */
+
+
 
     /* public function edit(Teacher $teacher) {
         return view('teacher.edit',compact('teacher'));
     } */
 
-    public function destroy(Phone $phone) {
-        $phone->delete();
+    public function destroy($id)
+    {
+        $phone = Phone::find($id);
 
-        return response()->json($phone);
+    if (!$phone) {
+        return response()->json([
+            'error' => 'telefono no encontrado.'
+        ], 404);
+    }
+
+    if ($phone->delete()) {
+        return response()->json([
+            'message' => 'telefono eliminado correctamente.'
+        ], 200);
+    }
+
+    return response()->json([
+        'error' => 'No se pudo eliminar el telefono.'
+    ], 400);
+    
     }
 }

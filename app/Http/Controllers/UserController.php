@@ -113,7 +113,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         if ($user->delete()) {
-            return response()->json(['message' => 'Usuario eliminado correctamente.'], 204);
+            return response()->json(['message' => 'Usuario eliminado correctamente.'], 200);
         }
 
         return response()->json(['error' => 'No se pudo eliminar el usuario.'], 400);
@@ -126,6 +126,8 @@ class UserController extends Controller
             'favoritos' => $usuario->favoritePublications
         ]);
     }
+
+    
 }
 
 

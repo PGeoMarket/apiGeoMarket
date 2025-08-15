@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -81,16 +82,24 @@ class CategoryController extends Controller
     }
 
     // Eliminar categoría
-    public function destroy(Category $category)
+    public function destroy($id)
     {
-        if ($category->delete()) {
-            return response()->json([
-                'message' => 'Categoría eliminada correctamente.'
-            ], 204);
-        }
+        $category = Category::find($id);
 
+    if (!$category) {
         return response()->json([
-            'error' => 'No se pudo eliminar la categoría.'
-        ], 400);
+            'error' => 'Categoría no encontrada.'
+        ], 404);
+    }
+
+    if ($category->delete()) {
+        return response()->json([
+            'message' => 'Categoría eliminada correctamente.'
+        ], 200);
+    }
+
+    return response()->json([
+        'error' => 'No se pudo eliminar la categoría.'
+    ], 400);
     }
 }

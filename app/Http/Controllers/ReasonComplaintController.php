@@ -43,10 +43,22 @@ class ReasonComplaintController extends Controller
         }
     }
 
-    public function show()
-    {
+    public function show($id)
+{
+    $reasonComplaint = ReasonComplaint::find($id);
 
+    if (!$reasonComplaint) {
+        return response()->json([
+            'error' => 'Motivo de queja no encontrado.'
+        ], 404);
     }
+
+    return response()->json([
+        'message' => 'Motivo de queja encontrado.',
+        'data'    => $reasonComplaint
+    ], 200);
+}
+
 
 
     public function edit()

@@ -60,12 +60,7 @@ class User extends Model
 
     public function favoritePublications()
     {
-        return $this->belongsToMany(
-            Publication::class,
-            'favorites',       // Tabla pivote
-            'user_id',         // FK usuario
-            'publication_id'   // FK publicación
-        );
+        return $this->belongsToMany(Publication::class);
     }
 
 
