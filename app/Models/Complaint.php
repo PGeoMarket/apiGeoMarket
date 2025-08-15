@@ -5,66 +5,60 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
-class User extends Model
+class Complaint extends Model
 {
+    // si tu columna en la migración es "Estado" (mayúscula), lo dejamos así
     protected $fillable = [
-        'primer_nombre',
-        'segundo_nombre',
-        'primer_apellido',
-        'segundo_apellido',
-        'foto',
-        'email',
-        'password_hash',
-        'rol_id',
-        'latitud',
-        'longitud',
-        'direccion_completa',
-        'activo'
+        'Estado',
+        'descripcion_adicional',
+        'user_id',
+        'publication_id',
+        'reason_id',
     ];
 
-    protected $hidden = [
-        'password_hash'
+    protected $casts = [
+        'Estado' => 'boolean',
     ];
 
-    // Relaciones permitidas en "included"
     protected $allowIncluded = [
-        'rol',
-        'favoritePublications'
+        'user',
+        'publication',
+        'reason'
     ];
 
-    // Campos permitidos en "filter"
     protected $allowFilter = [
         'id',
-        'primer_nombre',
-        'primer_apellido',
-        'email',
-        'rol_id',
-        'activo'
+        'descripcion_adicional',
+        'user_id',
+        'publication_id',
+        'reason_id'
     ];
 
-    // Campos permitidos en "sort"
     protected $allowSort = [
         'id',
-        'primer_nombre',
-        'primer_apellido',
-        'email',
+        'descripcion_adicional',
         'created_at',
         'updated_at'
     ];
 
- 
-    public function rol()
+    // Relaciones
+    public function user()
     {
-        return $this->belongsTo(Role::class, 'rol_id');
+        return $this->belongsTo(User::class);
     }
 
-    public function favoritePublications()
+    public function publication()
     {
-        return $this->belongsToMany(Publication::class);
+        return $this->belongsTo(Publication::class);
     }
 
+    // relación 'reason' para que el controlador pueda usar load('reason')
+    public function reason()
+    {
+        return $this->belongsTo(ReasonComplaint::class, 'reason_id');
+    }
 
-
+    // ===== Scopes (copiados/ajustados) =====
     public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {

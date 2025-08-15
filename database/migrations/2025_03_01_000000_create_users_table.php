@@ -12,12 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
+            $table->bigIncrements('id');
+            $table->string('primer_nombre', 100);
+            $table->string('segundo_nombre', 100)->nullable();
+            $table->string('primer_apellido', 100);
+            $table->string('segundo_apellido', 100)->nullable();
+            $table->longText('foto')->nullable();
+            $table->string('email', 255)->unique();
+            $table->string('password_hash', 255);
+
+            $table->unsignedSmallInteger('rol_id'); // Relación con roles
+            $table->foreign('rol_id')->references('id')->on('roles')->onDelete('cascade');
+
+            $table->double('latitud')->nullable();
+            $table->double('longitud')->nullable();
+            $table->text('direccion_completa')->nullable();
+            $table->boolean('activo')->default(true);
+
             $table->timestamps();
         });
 
@@ -42,8 +53,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

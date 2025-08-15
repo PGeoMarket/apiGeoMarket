@@ -5,66 +5,79 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
-class User extends Model
+class Publication extends Model
 {
+    //
     protected $fillable = [
-        'primer_nombre',
-        'segundo_nombre',
-        'primer_apellido',
-        'segundo_apellido',
-        'foto',
-        'email',
-        'password_hash',
-        'rol_id',
-        'latitud',
-        'longitud',
-        'direccion_completa',
-        'activo'
+        'titulo',
+        'precio',
+        'descripcion',
+        'imagen',
+        'visibilidad',
+        'seller_id',
+        'category_id'
     ];
 
-    protected $hidden = [
-        'password_hash'
-    ];
+    //en la asignacion masiva supongo que no son necesarias las fechas
 
-    // Relaciones permitidas en "included"
     protected $allowIncluded = [
-        'rol',
-        'favoritePublications'
+        'seller',
+        'seller.user',
+        'category',
+        'comments',
+        'comments.user',
+        'userswhofavorited', //favorite puede cambiar el nombre del modelo a futuro
+        'complaints',
+        'complaints.reasoncomplaint',
+        'chats'
     ];
 
-    // Campos permitidos en "filter"
     protected $allowFilter = [
         'id',
-        'primer_nombre',
-        'primer_apellido',
-        'email',
-        'rol_id',
-        'activo'
+        'titulo',
+        'seller_id',
+        'category_id',
+        'precio'
     ];
 
-    // Campos permitidos en "sort"
     protected $allowSort = [
         'id',
-        'primer_nombre',
-        'primer_apellido',
-        'email',
-        'created_at',
-        'updated_at'
+        'titulo',
+        'precio',
+        'fecha_actualizacion' //filtrar por actualizacion o publicacion?
     ];
 
- 
-    public function rol()
+    //Relaciones
+    public function seller()
     {
-        return $this->belongsTo(Role::class, 'rol_id');
+        return $this->belongsTo(Seller::class);
     }
 
-    public function favoritePublications()
+    public function category()
     {
-        return $this->belongsToMany(Publication::class);
+        return $this->belongsTo(Category::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 
+    public function usersWhoFavorited()
+    {
+        return $this->belongsToMany(User::class);
+    }
 
+    public function complaints()
+    {
+        return $this->hasMany(Complaint::class);
+    }
+
+    /*      public function chats() {
+        return $this->hasMany(Chat::class);
+    }
+ */
+    //Scopes
     public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
@@ -72,9 +85,11 @@ class User extends Model
         }
 
         $relations = explode(',', request('included'));
+
         $allowIncluded = collect($this->allowIncluded);
 
         foreach ($relations as $key => $relationship) {
+
             if (!$allowIncluded->contains($relationship)) {
                 unset($relations[$key]);
             }
@@ -90,17 +105,20 @@ class User extends Model
         }
 
         $filters = request('filter');
+
         $allowFilter = collect($this->allowFilter);
 
         foreach ($filters as $filter => $value) {
+
             if ($allowFilter->contains($filter)) {
-                $query->where($filter, 'LIKE', '%' . $value . '%');
+                $query->WHERE($filter, 'LIKE', '%' . $value . '%');
             }
         }
     }
 
     public function scopeSort(Builder $query)
     {
+
         if (empty($this->allowSort) || empty(request("sort"))) {
             return;
         }
@@ -109,12 +127,15 @@ class User extends Model
         $allowSort = collect($this->allowSort);
 
         foreach ($sortFields as $sortField) {
+
             $direction = 'asc';
 
             if (substr($sortField, 0, 1) === "-") {
                 $direction = 'desc';
                 $sortField = substr($sortField, 1);
             }
+
+            //return $sortField;
 
             if ($allowSort->contains($sortField)) {
                 $query->orderBy($sortField, $direction);
@@ -124,8 +145,10 @@ class User extends Model
 
     public function scopeGetOrPaginate(Builder $query)
     {
+
         if (request('perPage')) {
             $perPage = intval(request('perPage'));
+
             if ($perPage) {
                 return $query->paginate($perPage);
             }

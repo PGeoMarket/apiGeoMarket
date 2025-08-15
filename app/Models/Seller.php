@@ -2,70 +2,62 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
-class User extends Model
+class Seller extends Model
 {
+
     protected $fillable = [
-        'primer_nombre',
-        'segundo_nombre',
-        'primer_apellido',
-        'segundo_apellido',
-        'foto',
-        'email',
-        'password_hash',
-        'rol_id',
-        'latitud',
-        'longitud',
-        'direccion_completa',
+        'user_id',
+        'nombre_tienda',      // Corregido para coincidir con la migración
+        'descripcion',
+        'foto_portada',
+        'latitud_tienda',
+        'longitud_tienda',
+        'direccion_tienda',
         'activo'
     ];
 
-    protected $hidden = [
-        'password_hash'
-    ];
-
-    // Relaciones permitidas en "included"
+    // Listas blancas
     protected $allowIncluded = [
-        'rol',
-        'favoritePublications'
+        'user',
+        'phones',
+        'publications'
     ];
 
-    // Campos permitidos en "filter"
     protected $allowFilter = [
-        'id',
-        'primer_nombre',
-        'primer_apellido',
-        'email',
-        'rol_id',
-        'activo'
+        'nombre_tienda',
+        'activo',
+        'user_id'
     ];
 
-    // Campos permitidos en "sort"
     protected $allowSort = [
         'id',
-        'primer_nombre',
-        'primer_apellido',
-        'email',
-        'created_at',
-        'updated_at'
+        'nombre_tienda',
+        'activo',
+        'created_at'
     ];
 
- 
-    public function rol()
+    // Relación: Seller pertenece a un User
+    public function user()
     {
-        return $this->belongsTo(Role::class, 'rol_id');
+        return $this->belongsTo(User::class);
     }
 
-    public function favoritePublications()
+    // Relación: Seller tiene muchos Phone
+    public function phones()
     {
-        return $this->belongsToMany(Publication::class);
+        return $this->hasMany(Phone::class);
     }
 
+    // Relación: Seller tiene muchas Publication
+    public function publications()
+    {
+        return $this->hasMany(Publication::class);
+    }
 
-
-    public function scopeIncluded(Builder $query)
+        public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;

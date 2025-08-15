@@ -2,68 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
-class User extends Model
+class Category extends Model
 {
-    protected $fillable = [
-        'primer_nombre',
-        'segundo_nombre',
-        'primer_apellido',
-        'segundo_apellido',
-        'foto',
-        'email',
-        'password_hash',
-        'rol_id',
-        'latitud',
-        'longitud',
-        'direccion_completa',
-        'activo'
-    ];
+    protected $fillable = ['categoria'];
 
-    protected $hidden = [
-        'password_hash'
-    ];
-
-    // Relaciones permitidas en "included"
-    protected $allowIncluded = [
-        'rol',
-        'favoritePublications'
-    ];
-
-    // Campos permitidos en "filter"
-    protected $allowFilter = [
-        'id',
-        'primer_nombre',
-        'primer_apellido',
-        'email',
-        'rol_id',
-        'activo'
-    ];
-
-    // Campos permitidos en "sort"
-    protected $allowSort = [
-        'id',
-        'primer_nombre',
-        'primer_apellido',
-        'email',
-        'created_at',
-        'updated_at'
-    ];
-
- 
-    public function rol()
+    public function publications()
     {
-        return $this->belongsTo(Role::class, 'rol_id');
+        return $this->hasMany(Publication::class, 'category_id');
     }
-
-    public function favoritePublications()
-    {
-        return $this->belongsToMany(Publication::class);
-    }
-
-
 
     public function scopeIncluded(Builder $query)
     {
@@ -72,9 +21,11 @@ class User extends Model
         }
 
         $relations = explode(',', request('included'));
+
         $allowIncluded = collect($this->allowIncluded);
 
         foreach ($relations as $key => $relationship) {
+
             if (!$allowIncluded->contains($relationship)) {
                 unset($relations[$key]);
             }
@@ -90,17 +41,20 @@ class User extends Model
         }
 
         $filters = request('filter');
+
         $allowFilter = collect($this->allowFilter);
 
         foreach ($filters as $filter => $value) {
+
             if ($allowFilter->contains($filter)) {
-                $query->where($filter, 'LIKE', '%' . $value . '%');
+                $query->WHERE($filter, 'LIKE', '%' . $value . '%');
             }
         }
     }
 
     public function scopeSort(Builder $query)
     {
+
         if (empty($this->allowSort) || empty(request("sort"))) {
             return;
         }
@@ -109,12 +63,15 @@ class User extends Model
         $allowSort = collect($this->allowSort);
 
         foreach ($sortFields as $sortField) {
+
             $direction = 'asc';
 
             if (substr($sortField, 0, 1) === "-") {
                 $direction = 'desc';
                 $sortField = substr($sortField, 1);
             }
+
+            //return $sortField;
 
             if ($allowSort->contains($sortField)) {
                 $query->orderBy($sortField, $direction);
@@ -124,8 +81,10 @@ class User extends Model
 
     public function scopeGetOrPaginate(Builder $query)
     {
+
         if (request('perPage')) {
             $perPage = intval(request('perPage'));
+
             if ($perPage) {
                 return $query->paginate($perPage);
             }
