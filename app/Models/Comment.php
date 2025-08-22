@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
+ 
+    use HasFactory;
 
     protected $fillable = ['texto', 'valor_estrella', 'user_id', 'publication_id'];
 

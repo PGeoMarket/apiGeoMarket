@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Seller extends Model
 {
 
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'nombre_tienda',      // Corregido para coincidir con la migración

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Phone extends Model
 {
+     use HasFactory;
+
     public function seller()  {
         return $this->belongsTo(Seller::class);
     }
