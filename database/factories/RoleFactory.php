@@ -2,27 +2,21 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Role>
- */
 class RoleFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = Role::class;
     public function definition(): array
     {
-         return [
-            'nombre' => $this->faker->randomElement(['Admin', 'Vendedor', 'Comprador', 'Moderador']),
+        return [
+            'nombre' => $this->faker->randomElement(['Admin', 'Vendedor', 'Usuario', 'Moderador']),
             'permisos' => json_encode([
-                'create_posts' => $this->faker->boolean(),
-                'edit_posts' => $this->faker->boolean(),
-                'delete_posts' => $this->faker->boolean(),
-                'manage_users' => $this->faker->boolean(),
+                'read' => $this->faker->boolean(80),
+                'write' => $this->faker->boolean(60),
+                'delete' => $this->faker->boolean(30),
+                'admin' => $this->faker->boolean(20),
             ]),
         ];
     }

@@ -1,23 +1,28 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Seeders;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\ReasonComplaint;
+use Illuminate\Database\Seeder;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ReasonComplaint>
- */
-class ReasonComplaintFactory extends Factory
+class ReasonComplaintSeeder extends Seeder
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    public function run(): void
     {
-        return [
-            //
+        $reasons = [
+            'Contenido inapropiado o ofensivo',
+            'Información falsa o engañosa',
+            'Spam o contenido repetitivo',
+            'Posible fraude o estafa',
+            'Precio incorrecto o sospechoso',
+            'Producto no disponible',
+            'Violación de términos de servicio',
+            'Publicación duplicada',
+            'Imágenes inapropiadas',
+            'Contacto sospechoso del vendedor',
         ];
+        foreach ($reasons as $reason) {
+            ReasonComplaint::create(['razon' => $reason]);
+        }
     }
 }
