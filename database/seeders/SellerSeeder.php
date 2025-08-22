@@ -26,6 +26,6 @@ class SellerSeeder extends Seeder
             ]);
         }
         // Sellers adicionales
-        Seller::factory(10)->create();
+        Seller::factory(50)->create();
     }
 }

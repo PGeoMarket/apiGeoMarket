@@ -44,6 +44,6 @@ class RoleSeeder extends Seeder
             ]),
         ]);
         // Roles adicionales con factory
-        Role::factory(5)->create();
+        Role::factory(50)->create();
     }
 }
