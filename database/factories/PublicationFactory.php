@@ -1,23 +1,22 @@
 <?php
-
 namespace Database\Factories;
-
+use App\Models\Publication;
+use App\Models\Seller;
+use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
-
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Publication>
- */
 class PublicationFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
-    {
-        return [
-            //
-        ];
-    }
+ protected $model = Publication::class;
+ public function definition(): array
+ {
+ return [
+ 'titulo' => $this->faker->sentence(4),
+ 'precio' => $this->faker->numberBetween(10000, 5000000), // Pesos colombianos
+ 'descripcion' => $this->faker->paragraphs(2, true),
+ 'imagen' => $this->faker->imageUrl(600, 400, 'products'),
+ 'visibilidad' => $this->faker->boolean(85),
+ 'seller_id' => Seller::factory(),
+ 'category_id' => Category::factory(),
+ ];
+ }
 }
