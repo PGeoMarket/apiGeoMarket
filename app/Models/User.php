@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class User extends Model
 {
+    use HasFactory;
+    
     protected $fillable = [
         'primer_nombre',
         'segundo_nombre',

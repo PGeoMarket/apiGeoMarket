@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Complaint extends Model
 {
+        use HasFactory;
     // si tu columna en la migración es "Estado" (mayúscula), lo dejamos así
     protected $fillable = [
         'Estado',

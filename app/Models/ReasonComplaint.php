@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReasonComplaint extends Model
 {
+    use HasFactory;
+    
     protected $fillable = [
         'motivo'
     ];

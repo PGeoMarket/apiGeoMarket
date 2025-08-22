@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Publication extends Model
 {
+    use HasFactory;
     //
     protected $fillable = [
         'titulo',
