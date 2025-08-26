@@ -11,10 +11,10 @@ class UserController extends Controller
     // Listar todos los usuarios
     public function index()
     {
-        $users = User::with('rol') 
-            ->filter() 
-            ->sort()   
-            ->getOrPaginate(); 
+        $users = User::with('rol')
+            ->filter()
+            ->sort()
+            ->getOrPaginate();
 
         return response()->json($users);
     }
@@ -62,7 +62,13 @@ class UserController extends Controller
     // Mostrar un usuario específico
     public function show(User $user)
     {
-        $user->load('rol'); // Relación con roles
+        $user->load(
+            'role',
+            'seller',
+            'comments',
+            'complaints',
+            'favoritePublications',
+        ); // Relación con roles
 
         return response()->json(['user' => $user]);
     }
@@ -118,7 +124,8 @@ class UserController extends Controller
 
         return response()->json(['error' => 'No se pudo eliminar el usuario.'], 400);
     }
-      public function favoritos($id){
+    public function favoritos($id)
+    {
         $usuario = User::with('favoritePublications')->findOrFail($id);
 
         return response()->json([
@@ -126,10 +133,4 @@ class UserController extends Controller
             'favoritos' => $usuario->favoritePublications
         ]);
     }
-
-    
 }
-
-
-  
-

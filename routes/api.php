@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ComplaintController;
+use App\Http\Controllers\ORMController;
 use App\Http\Controllers\PhoneController;
 use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\ReasonComplaintController;
@@ -23,4 +24,7 @@ route::apiResource('sellers',SellerController::class);
 route::apiResource('users',UserController::class);
 
 
-route::get('users/{id}/favorites',[UserController::class,'favoritos']);
+route::get('users/{id}/favorites',[UserController::class,'favoritos']); 
+
+
+Route::get('ormControllerTest', [ORMController::class, 'testAllRelations']);

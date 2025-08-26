@@ -28,7 +28,7 @@ class User extends Model
 
     // Relaciones permitidas en "included"
     protected $allowIncluded = [
-        'rol',
+        'role',
         'favoritePublications'
     ];
 
@@ -53,15 +53,29 @@ class User extends Model
     ];
 
  
-    public function rol()
+    public function role()
     {
-        return $this->belongsTo(Role::class, 'rol_id');
+        return $this->belongsTo(Role::class);
     }
 
     public function favoritePublications()
     {
         return $this->belongsToMany(Publication::class);
     }
+
+    public function complaints(){
+        return $this->hasMany(Complaint::class);
+    }
+
+    public function seller()  {
+        return $this->hasOne(Seller::class);
+    }
+
+    public function comments()
+{
+    return $this->hasMany(Comment::class, 'user_id');
+}
+
 
 
 

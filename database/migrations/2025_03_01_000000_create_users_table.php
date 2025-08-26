@@ -21,8 +21,8 @@ return new class extends Migration
             $table->string('email', 255)->unique();
             $table->string('password_hash', 255);
 
-            $table->unsignedSmallInteger('rol_id'); // Relación con roles
-            $table->foreign('rol_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->unsignedSmallInteger('role_id'); // Relación con roles
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
 
             $table->double('latitud')->nullable();
             $table->double('longitud')->nullable();

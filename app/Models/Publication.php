@@ -26,7 +26,7 @@ class Publication extends Model
         'category',
         'comments',
         'comments.user',
-        'userswhofavorited', //favorite puede cambiar el nombre del modelo a futuro
+        'usersWhofavorited', //favorite puede cambiar el nombre del modelo a futuro
         'complaints',
         'complaints.reasoncomplaint',
         'chats'

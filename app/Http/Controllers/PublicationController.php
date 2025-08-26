@@ -37,7 +37,7 @@ class PublicationController extends Controller
             'publication' => $publication,
         ], 201);
     }
-
+ //usersWhoFavorited revisar
     public function show(Publication $publication)
     {
         $publication = Publication::with([
