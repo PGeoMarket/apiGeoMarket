@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Seller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class SellerController extends Controller
 {
@@ -15,19 +16,22 @@ class SellerController extends Controller
     }
 
     // Crear vendedor
-    public function store(Request $request)
+ public function store(Request $request)
     {
         $data = $request->validate([
-            'user_id'           => 'required|exists:users,id',
-            'nombre_tienda'     => 'required|string|max:255',
-            'descripcion'       => 'nullable|string',
-            'foto_portada'      => 'nullable|string',
-            'latitud_tienda'    => 'nullable|numeric',
-            'longitud_tienda'   => 'nullable|numeric',
-            'direccion_tienda'  => 'nullable|string',
-            'activo'            => 'boolean',
+            'user_id'       => 'required|exists:users,id',
+            'nombre_tienda' => 'required|string|max:255',
+            'descripcion'   => 'nullable|string',
+            'activo'        => 'boolean',
+
+            // extras
+            'foto'          => 'nullable|string|url',
+            'latitud'       => 'nullable|numeric',
+            'longitud'      => 'nullable|numeric',
+            'direccion'     => 'nullable|string',
         ]);
 
+        // Crear el seller
         $seller = Seller::create($data);
 
         if (!$seller) {
@@ -36,16 +40,37 @@ class SellerController extends Controller
             ], 400);
         }
 
+        // Asociar imagen si viene
+        if (!empty($data['foto'])) {
+            $seller->image()->create(['url' => $data['foto']]);
+        }
+
+        // Asociar coordenada si viene
+        if (!empty($data['latitud']) && !empty($data['longitud'])) {
+            $seller->coordinate()->create([
+                'latitud'   => $data['latitud'],
+                'longitud'  => $data['longitud'],
+                'direccion' => $data['direccion'] ?? null,
+            ]);
+        }
+
         return response()->json([
             'message' => 'Vendedor creado correctamente.',
-            'seller'  => $seller
+            'seller'  => $seller->load('user', 'phones', 'publications', 'image', 'coordinate'),
         ], 201);
     }
 
     // Mostrar un vendedor
     public function show(Seller $seller)
     {
-        $seller->load(['user', 'phones', 'publications']);
+        $seller->load([
+            'user',
+            'phones',
+            'publications',
+            'image',
+            'coordinate'
+        ]);
+
         return response()->json([
             'seller' => $seller
         ]);
@@ -55,20 +80,48 @@ class SellerController extends Controller
     public function update(Request $request, Seller $seller)
     {
         $data = $request->validate([
-            'nombre_tienda'     => 'required|string|max:255',
-            'descripcion'       => 'nullable|string',
-            'foto_portada'      => 'nullable|string',
-            'latitud_tienda'    => 'nullable|numeric',
-            'longitud_tienda'   => 'nullable|numeric',
-            'direccion_tienda'  => 'nullable|string',
-            'activo'            => 'boolean',
+            'nombre_tienda' => 'required|string|max:255',
+            'descripcion'   => 'nullable|string',
+            'activo'        => 'boolean',
+
+            // extras
+            'foto'          => 'nullable|string|url',
+            'latitud'       => 'nullable|numeric',
+            'longitud'      => 'nullable|numeric',
+            'direccion'     => 'nullable|string',
         ]);
 
         $seller->update($data);
 
+        // Actualizar/crear imagen
+        if (!empty($data['foto'])) {
+            if ($seller->image) {
+                $seller->image->update(['url' => $data['foto']]);
+            } else {
+                $seller->image()->create(['url' => $data['foto']]);
+            }
+        }
+
+        // Actualizar/crear coordenada
+        if (!empty($data['latitud']) && !empty($data['longitud'])) {
+            if ($seller->coordinate) {
+                $seller->coordinate->update([
+                    'latitud'   => $data['latitud'],
+                    'longitud'  => $data['longitud'],
+                    'direccion' => $data['direccion'] ?? null,
+                ]);
+            } else {
+                $seller->coordinate()->create([
+                    'latitud'   => $data['latitud'],
+                    'longitud'  => $data['longitud'],
+                    'direccion' => $data['direccion'] ?? null,
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Vendedor actualizado correctamente.',
-            'seller'  => $seller
+            'seller'  => $seller->load('user', 'phones', 'publications', 'image', 'coordinate'),
         ]);
     }
 
@@ -77,21 +130,20 @@ class SellerController extends Controller
     {
         $seller = Seller::find($id);
 
-    if (!$seller) {
-        return response()->json([
-            'error' => 'seller no encontrado.'
-        ], 404);
-    }
+        if (!$seller) {
+            return response()->json([
+                'error' => 'Seller no encontrado.'
+            ], 404);
+        }
 
-    if ($seller->delete()) {
-        return response()->json([
-            'message' => 'seller eliminado correctamente.'
-        ], 200);
-    }
+        if ($seller->delete()) {
+            return response()->json([
+                'message' => 'Seller eliminado correctamente.'
+            ], 200);
+        }
 
-    return response()->json([
-        'error' => 'No se pudo eliminar el seller.'
-    ], 400);
-    
+        return response()->json([
+            'error' => 'No se pudo eliminar el seller.'
+        ], 400);
     }
 }

@@ -11,9 +11,10 @@ class ReasonComplaint extends Model
     ];
 
     //Relaciones
-    public function complaints() {
-        return $this->hasMany(Complaint::class);
-    }
+    public function complaints()
+{
+    return $this->hasMany(Complaint::class, 'reason_id');
+}
 
 
 }

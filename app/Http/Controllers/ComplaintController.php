@@ -53,7 +53,7 @@ class ComplaintController extends Controller
     public function show(Complaint $complaint)
     {
         // ahora existe la relación 'reason' en el modelo
-        $complaint->load(['user', 'publication', 'reason']);
+        $complaint->load(['user', 'publication', 'reasonComplaint']);
 
         return response()->json([
             'complaint' => $complaint
