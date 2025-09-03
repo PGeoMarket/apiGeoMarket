@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('titulo', 255);
             $table->integer('precio');
             $table->text('descripcion');
-            $table->longtext('imagen');
             $table->boolean('visibilidad')->default(true);
             $table->unsignedBigInteger('seller_id');   // o seria user_id?
             $table->unsignedBigInteger('category_id');    // id_categoria

@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-
+use App\Models\Image;
+use App\Models\Coordinate;
 class UserController extends Controller
 {
     // Listar todos los usuarios
