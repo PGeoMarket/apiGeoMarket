@@ -27,4 +27,10 @@ route::apiResource('users',UserController::class);
 route::get('users/{id}/favorites',[UserController::class,'favoritos']); 
 
 
-Route::get('ormControllerTest', [ORMController::class, 'testAllRelations']);
+
+
+
+
+
+Route::get('/all-relations', [ORMController::class, 'testAllRelations']);
+Route::get('/polymorphic-relations', [ORMController::class, 'testPolymorphicRelations']);

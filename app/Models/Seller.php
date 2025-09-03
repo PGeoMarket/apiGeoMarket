@@ -55,7 +55,7 @@ class Seller extends Model
         return $this->hasMany(Publication::class);
     }
 
-        public function image()
+    public function image()
     {
         return $this->morphOne(Image::class, 'imageable');
     }
@@ -66,7 +66,7 @@ class Seller extends Model
     }
 
 
-        public function scopeIncluded(Builder $query)
+    public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;
