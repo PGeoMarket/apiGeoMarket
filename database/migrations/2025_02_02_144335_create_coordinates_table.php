@@ -11,16 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sellers', function (Blueprint $table) {
+        Schema::create('coordinates', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('nombre_tienda', 255);
-            $table->text('descripcion')->nullable();
-
-            $table->boolean('activo')->default(true);
-
             $table->timestamps();
+            $table->double('latitud');
+            $table->double('longitud');
+            $table->string('direccion');
+            $table->morphs('coordinateable');
         });
     }
 
@@ -29,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sellers');
+        Schema::dropIfExists('coordinates');
     }
 };

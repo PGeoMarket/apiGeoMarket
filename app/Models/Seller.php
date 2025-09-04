@@ -15,10 +15,6 @@ class Seller extends Model
         'user_id',
         'nombre_tienda',      // Corregido para coincidir con la migración
         'descripcion',
-        'foto_portada',
-        'latitud_tienda',
-        'longitud_tienda',
-        'direccion_tienda',
         'activo'
     ];
 
@@ -26,7 +22,9 @@ class Seller extends Model
     protected $allowIncluded = [
         'user',
         'phones',
-        'publications'
+        'publications',
+        'image',
+        'coordinate'
     ];
 
     protected $allowFilter = [
@@ -60,7 +58,18 @@ class Seller extends Model
         return $this->hasMany(Publication::class);
     }
 
-        public function scopeIncluded(Builder $query)
+    public function image()
+    {
+        return $this->morphOne(Image::class, 'imageable');
+    }
+
+    public function coordinate()
+    {
+        return $this->morphOne(Coordinate::class, 'coordinateable');
+    }
+
+
+    public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;
