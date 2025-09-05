@@ -12,13 +12,9 @@ class User extends Model
         'segundo_nombre',
         'primer_apellido',
         'segundo_apellido',
-        'foto',
         'email',
         'password_hash',
         'rol_id',
-        'latitud',
-        'longitud',
-        'direccion_completa',
         'activo'
     ];
 
@@ -28,8 +24,10 @@ class User extends Model
 
     // Relaciones permitidas en "included"
     protected $allowIncluded = [
-        'rol',
-        'favoritePublications'
+        'role',
+        'favoritePublications',
+        'image',
+        'coordinate'
     ];
 
     // Campos permitidos en "filter"
@@ -53,15 +51,39 @@ class User extends Model
     ];
 
  
-    public function rol()
+    public function role()
     {
-        return $this->belongsTo(Role::class, 'rol_id');
+        return $this->belongsTo(Role::class);
     }
 
     public function favoritePublications()
     {
         return $this->belongsToMany(Publication::class);
     }
+
+    public function complaints(){
+        return $this->hasMany(Complaint::class);
+    }
+
+    public function seller()  {
+        return $this->hasOne(Seller::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'user_id');
+    }
+
+    public function image()
+    {
+        return $this->morphOne(Image::class, 'imageable');
+    }
+
+    public function coordinate()
+    {
+        return $this->morphOne(Coordinate::class, 'coordinateable');
+    }
+
 
 
 

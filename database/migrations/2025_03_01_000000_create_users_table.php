@@ -17,16 +17,12 @@ return new class extends Migration
             $table->string('segundo_nombre', 100)->nullable();
             $table->string('primer_apellido', 100);
             $table->string('segundo_apellido', 100)->nullable();
-            $table->longText('foto')->nullable();
             $table->string('email', 255)->unique();
             $table->string('password_hash', 255);
 
-            $table->unsignedSmallInteger('rol_id'); // Relación con roles
-            $table->foreign('rol_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->unsignedSmallInteger('role_id'); // Relación con roles
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
 
-            $table->double('latitud')->nullable();
-            $table->double('longitud')->nullable();
-            $table->text('direccion_completa')->nullable();
             $table->boolean('activo')->default(true);
 
             $table->timestamps();

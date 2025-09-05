@@ -23,7 +23,7 @@ class Complaint extends Model
     protected $allowIncluded = [
         'user',
         'publication',
-        'reason'
+        'reasonComplaint'
     ];
 
     protected $allowFilter = [
@@ -53,7 +53,7 @@ class Complaint extends Model
     }
 
     // relación 'reason' para que el controlador pueda usar load('reason')
-    public function reason()
+    public function reasonComplaint()
     {
         return $this->belongsTo(ReasonComplaint::class, 'reason_id');
     }
