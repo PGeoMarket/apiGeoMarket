@@ -25,10 +25,14 @@ Route::apiResource('publications', PublicationController::class);
 Route::apiResource('reasonComplaints', ReasonComplaintController::class);
 Route::apiResource('roles', RoleController::class);
 Route::apiResource('sellers', SellerController::class);
-Route::apiResource('users', UserController::class);
+
 Route::apiResource('images', ImageController::class);
 
-
+//rutas del usuario y favoritos
+Route::apiResource('users', UserController::class);
 Route::get('users/{id}/favorites', [UserController::class, 'favoritos']);
+Route::patch('users/{userId}/favorites/toggle', [UserController::class, 'toggleFavorito']);
+
+
 Route::get('orm/test-all', [ORMController::class, 'testAllRelations']);
 Route::get('orm/test-polymorphic', [ORMController::class, 'testPolymorphicRelations']);

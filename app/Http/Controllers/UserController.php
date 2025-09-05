@@ -179,4 +179,22 @@ class UserController extends Controller
             'favoritos'  => $usuario->favoritePublications
         ]);
     }
+
+    public function toggleFavorito(Request $request, $userId)
+    {
+        $request->validate([
+            'publication_id' => 'required|exists:publications,id'
+        ]);
+
+        $user = User::findOrFail($userId);
+        
+        // Laravel maneja automáticamente si agregar o quitar
+        $result = $user->favoritePublications()->toggle($request->publication_id);
+        
+        $message = empty($result['attached']) ? 'Quitado de favoritos' : 'Agregado a favoritos';
+        
+        return response()->json(['message' => $message]);
+    }
+
+
 }
