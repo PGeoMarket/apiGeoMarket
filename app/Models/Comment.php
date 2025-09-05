@@ -3,13 +3,44 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Comment extends Model
 {
+protected $allowIncluded = [
+    'user',
+    'user.role',
+    'user.seller',
+    'publication',
+    'publication.seller',
+    'publication.seller.user',
+    'publication.image',
+    'publication.category'
+];
 
-    protected $fillable = ['texto', 'valor_estrella', 'user_id', 'publication_id'];
+// Campos por los que se puede filtrar
+protected $allowFilter = [
+    'id',
+    'texto',
+    'valor_estrella',
+    'user_id',
+    'publication_id',
+    'created_at',
+    'updated_at'
+];
+
+// Campos por los que se puede ordenar
+protected $allowSort = [
+    'id',
+    'valor_estrella',
+    'user_id',
+    'publication_id',
+    'created_at',
+    'updated_at'
+];
 
 
+    // Relaciones
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -20,26 +51,80 @@ class Comment extends Model
         return $this->belongsTo(Publication::class, 'publication_id');
     }
 
-    public function scopeByUser($query, $userId)
-{
-    return $query->where('user_id', $userId);
-}
+    
+    public function scopeIncluded(Builder $query)
+    {
+        if (empty($this->allowIncluded) || empty(request("included"))) {
+            return;
+        }
 
-// Filtrar por publicación
-public function scopeByPublication($query, $publicationId)
-{
-    return $query->where('publication_id', $publicationId);
-}
+        $relations = explode(',', request('included'));
 
-// Filtrar por cantidad exacta de estrellas
-public function scopeByStars($query, $stars)
-{
-    return $query->where('valor_estrella', $stars);
-}
+        $allowIncluded = collect($this->allowIncluded);
 
-// Buscar texto dentro del comentario
-public function scopeSearch($query, $keyword)
-{
-    return $query->where('texto', 'LIKE', "%{$keyword}%");
-}
+        foreach ($relations as $key => $relationship) {
+
+            if (!$allowIncluded->contains($relationship)) {
+                unset($relations[$key]);
+            }
+        }
+
+        $query->with($relations);
+    }
+
+    public function scopeFilter(Builder $query)
+    {
+        if (empty($this->allowFilter) || empty(request("filter"))) {
+            return;
+        }
+
+        $filters = request('filter');
+
+        $allowFilter = collect($this->allowFilter);
+
+        foreach ($filters as $filter => $value) {
+
+            if ($allowFilter->contains($filter)) {
+                $query->WHERE($filter, 'LIKE', '%' . $value . '%');
+            }
+        }
+    }
+
+    public function scopeSort(Builder $query)
+    {
+
+        if (empty($this->allowSort) || empty(request("sort"))) {
+            return;
+        }
+
+        $sortFields = explode(',', request('sort'));
+        $allowSort = collect($this->allowSort);
+
+        foreach ($sortFields as $sortField) {
+
+            $direction = 'asc';
+
+            if (substr($sortField, 0, 1) === "-") {
+                $direction = 'desc';
+                $sortField = substr($sortField, 1);
+            }
+
+            //return $sortField;
+
+            if ($allowSort->contains($sortField)) {
+                $query->orderBy($sortField, $direction);
+            }
+        }
+    }
+    public function scopeGetOrPaginate(Builder $query)
+    {
+        if (request('perPage')) {
+            $perPage = intval(request('perPage'));
+            if ($perPage) {
+                return $query->paginate($perPage);
+            }
+        }
+
+        return $query->get();
+    }
 }

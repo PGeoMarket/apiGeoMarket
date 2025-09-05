@@ -9,15 +9,9 @@ class CommentController extends Controller
 {
     public function index(Request $request)
     {
-        $comments = Comment::query()
-            ->when($request->user_id, fn($q) => $q->byUser($request->user_id))
-            ->when($request->publication_id, fn($q) => $q->byPublication($request->publication_id))
-            ->when($request->valor_estrella, fn($q) => $q->byStars($request->valor_estrella))
-            ->when($request->search, fn($q) => $q->search($request->search))
-            ->with(['user', 'publication'])
-            ->get();
+       $comment = Comment::included()->filter()->sort()->GetOrPaginate();
 
-        return response()->json($comments);
+        return response()->json($comment);
     }
 
     public function store(Request $request)

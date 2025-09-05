@@ -7,52 +7,51 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Coordinate extends Model
 {
-    //   
-    protected $fillable = [
-        'latitud',
-        'longitud',
-        'direccion',
-        'coordinateable_id',
-        'coordinateable_type'
-    ];
-    
-    // Relaciones permitidas en "included"
-    protected $allowIncluded = [
-        'coordinateable_id',
-        'coordinateable_type'
-    ];
+ protected $allowIncluded = [
+    'coordinateable'
+];
 
-    // Campos permitidos en "filter"
-    protected $allowFilter = [
-        'latitud',
-        'longitud',
-        'direccion_completa',
-        'coordinateable_id',
-        'coordinateable_type'
-    ];
+// Campos por los que se puede filtrar
+protected $allowFilter = [
+    'id',
+    'latitud',
+    'longitud',
+    'direccion',
+    'coordinateable_type',
+    'coordinateable_id',
+    'created_at',
+    'updated_at'
+];
 
-    // Campos permitidos en "sort"
-    protected $allowSort = [
-        'latitud',
-        'longitud',
-        'created_at',
-        'updated_at'
-    ];
+// Campos por los que se puede ordenar
+protected $allowSort = [
+    'id',
+    'latitud',
+    'longitud',
+    'direccion',
+    'coordinateable_type',
+    'coordinateable_id',
+    'created_at',
+    'updated_at'
+];
+
 
     public function coordinateable() {
         return $this->morphTo();
     }
 
-     public function scopeIncluded(Builder $query)
+      public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;
         }
 
         $relations = explode(',', request('included'));
+
         $allowIncluded = collect($this->allowIncluded);
 
         foreach ($relations as $key => $relationship) {
+
             if (!$allowIncluded->contains($relationship)) {
                 unset($relations[$key]);
             }
@@ -68,17 +67,20 @@ class Coordinate extends Model
         }
 
         $filters = request('filter');
+
         $allowFilter = collect($this->allowFilter);
 
         foreach ($filters as $filter => $value) {
+
             if ($allowFilter->contains($filter)) {
-                $query->where($filter, 'LIKE', '%' . $value . '%');
+                $query->WHERE($filter, 'LIKE', '%' . $value . '%');
             }
         }
     }
 
     public function scopeSort(Builder $query)
     {
+
         if (empty($this->allowSort) || empty(request("sort"))) {
             return;
         }
@@ -87,6 +89,7 @@ class Coordinate extends Model
         $allowSort = collect($this->allowSort);
 
         foreach ($sortFields as $sortField) {
+
             $direction = 'asc';
 
             if (substr($sortField, 0, 1) === "-") {
@@ -94,12 +97,13 @@ class Coordinate extends Model
                 $sortField = substr($sortField, 1);
             }
 
+            //return $sortField;
+
             if ($allowSort->contains($sortField)) {
                 $query->orderBy($sortField, $direction);
             }
         }
     }
-
     public function scopeGetOrPaginate(Builder $query)
     {
         if (request('perPage')) {
