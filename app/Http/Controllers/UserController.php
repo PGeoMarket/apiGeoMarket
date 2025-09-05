@@ -32,7 +32,7 @@ class UserController extends Controller
             'segundo_apellido' => 'nullable|string|max:100',
             'email'            => 'required|string|email|max:255|unique:users,email',
             'password'         => 'required|string|min:8',
-            'rol_id'           => 'required|exists:roles,id',
+            'role_id'           => 'required|exists:roles,id',
             'activo'           => 'boolean',
 
             // extras
@@ -103,9 +103,9 @@ class UserController extends Controller
             'segundo_nombre'   => 'nullable|string|max:100',
             'primer_apellido'  => 'required|string|max:100',
             'segundo_apellido' => 'nullable|string|max:100',
-            'email'            => 'required|string|email|max:255|unique:users,email',
+            'email'            => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password'         => 'nullable|string|min:8',
-            'rol_id'           => 'required|exists:roles,id',
+            'role_id'           => 'required|exists:roles,id',
             'activo'           => 'boolean',
 
             // extras
@@ -179,4 +179,22 @@ class UserController extends Controller
             'favoritos'  => $usuario->favoritePublications
         ]);
     }
+
+    public function toggleFavorito(Request $request, $userId)
+    {
+        $request->validate([
+            'publication_id' => 'required|exists:publications,id'
+        ]);
+
+        $user = User::findOrFail($userId);
+        
+        // Laravel maneja automáticamente si agregar o quitar
+        $result = $user->favoritePublications()->toggle($request->publication_id);
+        
+        $message = empty($result['attached']) ? 'Quitado de favoritos' : 'Agregado a favoritos';
+        
+        return response()->json(['message' => $message]);
+    }
+
+
 }
