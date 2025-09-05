@@ -9,8 +9,7 @@ class PhoneFactory extends Factory
  public function definition(): array
  {
  return [
- 'numero_telefono' => $this->faker->numberBetween(3000000000, 3999999999), //
-Colombian mobile format
+ 'numero_telefono' => $this->faker->numberBetween(3000000000, 3999999999), //Colombian mobile format
  'seller_id' => Seller::factory(),
  ];
  }
