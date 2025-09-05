@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Phone extends Model
 {
+
+
 
     protected $allowIncluded = [
     'seller',
@@ -39,7 +42,7 @@ protected $allowSort = [
     protected $fillable=['numero_telefono','seller_id'];
     
 
-     public function scopeIncluded(Builder $query)
+    public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;
@@ -102,6 +105,18 @@ protected $allowSort = [
                 $query->orderBy($sortField, $direction);
             }
         }
+    }
+
+    public function scopeGetOrPaginate(Builder $query)
+    {
+        if (request('perPage')) {
+            $perPage = intval(request('perPage'));
+            if ($perPage) {
+                return $query->paginate($perPage);
+            }
+        }
+
+        return $query->get();
     }
 }
 

@@ -11,25 +11,29 @@ class Role extends Model
     use HasFactory;
 
     // Relaciones que se pueden incluir
-protected $allowIncluded = [
-    'users',
-    'users.seller',
-    'users.comments',
-    'users.complaints'
-];
+    protected $allowIncluded = [
+        'users',
+        'users.seller',
+        'users.comments',
+        'users.complaints'
+    ];
 
-// Campos por los que se puede filtrar
-protected $allowFilter = [
-    'id',
-    'nombre',
-    'permisos'
-];
+    // Campos por los que se puede filtrar
+    protected $allowFilter = [
+        'id',
+        'nombre',
+        'permisos'
+    ];
 
-// Campos por los que se puede ordenar
-protected $allowSort = [
-    'id',
-    'nombre'
-];
+    // Campos por los que se puede ordenar
+    protected $allowSort = [
+        'id',
+        'nombre'
+    ];
+
+    protected $casts = [
+        'permisos' => 'array'
+    ];
 
 
     public function users()
@@ -37,9 +41,9 @@ protected $allowSort = [
         return $this->hasMany(User::class);
     }
 
-    protected $fillable=['nombre','permisos'];
+    protected $fillable = ['nombre', 'permisos'];
 
-   public function scopeIncluded(Builder $query)
+    public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;
@@ -103,7 +107,7 @@ protected $allowSort = [
             }
         }
     }
-//
+    //
     public function scopeGetOrPaginate(Builder $query)
     {
 

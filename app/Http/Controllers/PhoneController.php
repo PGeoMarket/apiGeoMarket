@@ -9,7 +9,7 @@ class PhoneController extends Controller
 {
     public function index()
 {
-    $phones = Phone::with('seller')->get();
+    $phones = Phone::included()->filter()->sort()->GetOrPaginate();
 
     return response()->json($phones);
 }

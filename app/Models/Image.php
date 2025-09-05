@@ -7,36 +7,42 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Image extends Model
 {
-protected $allowIncluded = [
-    'imageable'
-];
 
-// Campos por los que se puede filtrar
-protected $allowFilter = [
-    'id',
-    'url',
-    'imageable_type',
-    'imageable_id',
-    'created_at',
-    'updated_at'
-];
+    protected $fillable = [
+        'url',
+        'imageable_id',
+        'imageable_type',
+    ];
+    protected $allowIncluded = [
+        'imageable'
+    ];
 
-// Campos por los que se puede ordenar
-protected $allowSort = [
-    'id',
-    'url',
-    'imageable_type',
-    'imageable_id',
-    'created_at',
-    'updated_at'
-];
+    // Campos por los que se puede filtrar
+    protected $allowFilter = [
+        'id',
+        'url',
+        'imageable_type',
+        'imageable_id',
+        'created_at',
+        'updated_at'
+    ];
+
+    // Campos por los que se puede ordenar
+    protected $allowSort = [
+        'id',
+        'url',
+        'imageable_type',
+        'imageable_id',
+        'created_at',
+        'updated_at'
+    ];
 
     public function imageable()
     {
         return $this->morphTo();
     }
 
-      public function scopeIncluded(Builder $query)
+    public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;

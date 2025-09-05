@@ -15,6 +15,7 @@ return new class extends Migration
             $table->smallIncrements('id'); // smallint unsigned autoincrement
             $table->string('nombre', 50);
             $table->json('permisos');
+            $table->timestamps();
         });
     }
 

@@ -7,40 +7,48 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Coordinate extends Model
 {
- protected $allowIncluded = [
-    'coordinateable'
-];
+    protected $allowIncluded = [
+        'coordinateable'
+    ];
 
-// Campos por los que se puede filtrar
-protected $allowFilter = [
-    'id',
-    'latitud',
-    'longitud',
-    'direccion',
-    'coordinateable_type',
-    'coordinateable_id',
-    'created_at',
-    'updated_at'
-];
+    // Campos por los que se puede filtrar
+    protected $allowFilter = [
+        'id',
+        'latitud',
+        'longitud',
+        'direccion',
+        'coordinateable_type',
+        'coordinateable_id',
+        'created_at',
+        'updated_at'
+    ];
 
-// Campos por los que se puede ordenar
-protected $allowSort = [
-    'id',
-    'latitud',
-    'longitud',
-    'direccion',
-    'coordinateable_type',
-    'coordinateable_id',
-    'created_at',
-    'updated_at'
-];
+    // Campos por los que se puede ordenar
+    protected $allowSort = [
+        'id',
+        'latitud',
+        'longitud',
+        'direccion',
+        'coordinateable_type',
+        'coordinateable_id',
+        'created_at',
+        'updated_at'
+    ];
 
+    protected $fillable = [
+        'latitud',
+        'longitud',
+        'direccion',
+        'coordinateable_id',
+        'coordinateable_type'
+    ];
 
-    public function coordinateable() {
+    public function coordinateable()
+    {
         return $this->morphTo();
     }
 
-      public function scopeIncluded(Builder $query)
+    public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;

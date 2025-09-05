@@ -51,6 +51,16 @@ protected $allowSort = [
     'created_at',
     'updated_at'
 ];
+protected $fillable = [
+        'primer_nombre',
+        'segundo_nombre',
+        'primer_apellido',
+        'segundo_apellido',
+        'email',
+        'password',
+        'rol_id',
+        'activo'
+    ];
 
 
     public function role()

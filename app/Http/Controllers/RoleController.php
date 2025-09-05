@@ -31,7 +31,7 @@ class RoleController extends Controller
     {
         $data = $request->validate([
             'nombre'      => 'required|string|max:50',
-            'permisos'      => 'required|json',
+            'permisos'      => 'required|array',
         ]);
 
         $role = Role::create($data);

@@ -46,6 +46,12 @@ protected $allowSort = [
     'created_at',
     'updated_at'
 ];
+protected $fillable = [
+        'user_id',
+        'nombre_tienda',      // Corregido para coincidir con la migración
+        'descripcion',
+        'activo'
+    ];
 
 
     // Relación: Seller pertenece a un User

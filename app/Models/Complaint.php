@@ -9,6 +9,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Complaint extends Model
 {
         use HasFactory;
+
+        protected $fillable = [
+        'Estado',
+        'descripcion_adicional',
+        'user_id',
+        'publication_id',
+        'reason_id',
+    ];
     // si tu columna en la migración es "Estado" (mayúscula), lo dejamos así
 
     protected $allowIncluded = [
@@ -20,7 +28,6 @@ class Complaint extends Model
     'publication.seller.user',
     'publication.category',
     'publication.image',
-    'publication.coordinates',
     'reasonComplaint'
 ];
 

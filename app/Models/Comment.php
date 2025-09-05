@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Comment extends Model
 {
+
+    protected $fillable=[
+        'texto','valor_estrella','user_id','publication_id'
+    ];
 protected $allowIncluded = [
     'user',
     'user.role',

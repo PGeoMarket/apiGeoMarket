@@ -9,28 +9,28 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class ReasonComplaint extends Model
 {
 
-       protected $allowIncluded = [
-    'complaints',
-    'complaints.user',
-    'complaints.publication',
-    'complaints.publication.seller'
-];
+    protected $allowIncluded = [
+        'complaints',
+        'complaints.user',
+        'complaints.publication',
+        'complaints.publication.seller'
+    ];
 
-// Campos por los que se puede filtrar
-protected $allowFilter = [
-    'id',
-    'motivo',
-    'created_at',
-    'updated_at'
-];
+    // Campos por los que se puede filtrar
+    protected $allowFilter = [
+        'id',
+        'motivo',
+        'created_at',
+        'updated_at'
+    ];
 
-// Campos por los que se puede ordenar
-protected $allowSort = [
-    'id',
-    'motivo',
-    'created_at',
-    'updated_at'
-];
+    // Campos por los que se puede ordenar
+    protected $allowSort = [
+        'id',
+        'motivo',
+        'created_at',
+        'updated_at'
+    ];
     protected $fillable = [
         'motivo'
     ];
@@ -42,7 +42,7 @@ protected $allowSort = [
     }
 
     // Scope: included
-       public function scopeIncluded(Builder $query)
+    public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;
@@ -106,7 +106,7 @@ protected $allowSort = [
             }
         }
     }
-//
+    //
     public function scopeGetOrPaginate(Builder $query)
     {
 
