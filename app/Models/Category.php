@@ -7,6 +7,33 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
+
+    protected $allowIncluded = [
+    'publications',
+    'publications.seller',
+    'publications.seller.user',
+    'publications.comments',
+    'publications.image',
+   
+];
+
+// Campos por los que se puede filtrar
+protected $allowFilter = [
+    'id',
+    'categoria',
+    'created_at',
+    'updated_at'
+];
+
+// Campos por los que se puede ordenar
+protected $allowSort = [
+    'id',
+    'categoria',
+    'created_at',
+    'updated_at'
+];
+
+
     protected $fillable = ['categoria'];
 
     public function publications()
@@ -14,7 +41,7 @@ class Category extends Model
         return $this->hasMany(Publication::class, 'category_id');
     }
 
-    public function scopeIncluded(Builder $query)
+     public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;

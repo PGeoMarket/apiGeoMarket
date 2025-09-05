@@ -8,38 +8,43 @@ use Illuminate\Database\Eloquent\Builder;
 class Complaint extends Model
 {
     // si tu columna en la migración es "Estado" (mayúscula), lo dejamos así
-    protected $fillable = [
-        'Estado',
-        'descripcion_adicional',
-        'user_id',
-        'publication_id',
-        'reason_id',
-    ];
-
-    protected $casts = [
-        'Estado' => 'boolean',
-    ];
 
     protected $allowIncluded = [
-        'user',
-        'publication',
-        'reasonComplaint'
-    ];
+    'user',
+    'user.role',
+    'user.seller',
+    'publication',
+    'publication.seller',
+    'publication.seller.user',
+    'publication.category',
+    'publication.image',
+    'publication.coordinates',
+    'reasonComplaint'
+];
 
-    protected $allowFilter = [
-        'id',
-        'descripcion_adicional',
-        'user_id',
-        'publication_id',
-        'reason_id'
-    ];
+// Campos por los que se puede filtrar
+protected $allowFilter = [
+    'id',
+    'estado',
+    'descripcion_adicional',
+    'user_id',
+    'publication_id',
+    'reason_id',
+    'created_at',
+    'updated_at'
+];
 
-    protected $allowSort = [
-        'id',
-        'descripcion_adicional',
-        'created_at',
-        'updated_at'
-    ];
+// Campos por los que se puede ordenar
+protected $allowSort = [
+    'id',
+    'estado',
+    'user_id',
+    'publication_id',
+    'reason_id',
+    'created_at',
+    'updated_at'
+];
+
 
     // Relaciones
     public function user()
@@ -57,8 +62,7 @@ class Complaint extends Model
     {
         return $this->belongsTo(ReasonComplaint::class, 'reason_id');
     }
-
-    // ===== Scopes (copiados/ajustados) =====
+ //Scopes
     public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
@@ -66,9 +70,11 @@ class Complaint extends Model
         }
 
         $relations = explode(',', request('included'));
+
         $allowIncluded = collect($this->allowIncluded);
 
         foreach ($relations as $key => $relationship) {
+
             if (!$allowIncluded->contains($relationship)) {
                 unset($relations[$key]);
             }
@@ -84,17 +90,20 @@ class Complaint extends Model
         }
 
         $filters = request('filter');
+
         $allowFilter = collect($this->allowFilter);
 
         foreach ($filters as $filter => $value) {
+
             if ($allowFilter->contains($filter)) {
-                $query->where($filter, 'LIKE', '%' . $value . '%');
+                $query->WHERE($filter, 'LIKE', '%' . $value . '%');
             }
         }
     }
 
     public function scopeSort(Builder $query)
     {
+
         if (empty($this->allowSort) || empty(request("sort"))) {
             return;
         }
@@ -103,12 +112,15 @@ class Complaint extends Model
         $allowSort = collect($this->allowSort);
 
         foreach ($sortFields as $sortField) {
+
             $direction = 'asc';
 
             if (substr($sortField, 0, 1) === "-") {
                 $direction = 'desc';
                 $sortField = substr($sortField, 1);
             }
+
+            //return $sortField;
 
             if ($allowSort->contains($sortField)) {
                 $query->orderBy($sortField, $direction);
@@ -128,3 +140,5 @@ class Complaint extends Model
         return $query->get();
     }
 }
+
+
