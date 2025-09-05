@@ -22,7 +22,7 @@ class ReasonComplaintSeeder extends Seeder
             'Contacto sospechoso del vendedor',
         ];
         foreach ($reasons as $reason) {
-            ReasonComplaint::create(['razon' => $reason]);
+            ReasonComplaint::create(['motivo' => $reason]);
         }
     }
 }

@@ -16,7 +16,7 @@ class SellerSeeder extends Seeder
         // Si no hay usuarios vendedores, crear algunos
         if ($users->isEmpty()) {
             $users = User::factory(15)->create([
-                'rol_id' => \App\Models\Role::where('nombre', 'Vendedor')->first()->id,
+                'role_id' => \App\Models\Role::where('nombre', 'Vendedor')->first()->id,
             ]);
         }
         // Crear sellers para usuarios vendedores

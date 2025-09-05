@@ -12,8 +12,7 @@ class PhoneSeeder extends Seeder
     {
         $sellers = Seller::all();
         foreach ($sellers as $seller) {
-            // 1-3 teléfonos por vendedor
-            Phone::factory(50)->create([
+            Phone::factory(rand(1, 2))->create([
                 'seller_id' => $seller->id,
             ]);
         }

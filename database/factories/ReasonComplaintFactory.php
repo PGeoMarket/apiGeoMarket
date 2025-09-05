@@ -1,13 +1,14 @@
 <?php
-
-namespace Database\Seeders;
+namespace Database\Factories;
 
 use App\Models\ReasonComplaint;
-use Illuminate\Database\Seeder;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ReasonComplaintSeeder extends Seeder
+class ReasonComplaintFactory extends Factory
 {
-    public function run(): void
+    protected $model = ReasonComplaint::class;
+
+    public function definition(): array
     {
         $reasons = [
             'Contenido inapropiado o ofensivo',
@@ -21,8 +22,9 @@ class ReasonComplaintSeeder extends Seeder
             'Imágenes inapropiadas',
             'Contacto sospechoso del vendedor',
         ];
-        foreach ($reasons as $reason) {
-            ReasonComplaint::create(['razon' => $reason]);
-        }
+
+        return [
+            'motivo' => $this->faker->randomElement($reasons),
+        ];
     }
 }

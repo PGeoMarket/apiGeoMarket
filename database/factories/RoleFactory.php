@@ -11,7 +11,7 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => $this->faker->randomElement(['Admin', 'Vendedor', 'Usuario', 'Moderador']),
+            'nombre' => $this->faker->randomElement(['Admin', 'Vendedor', 'Usuario']),
             'permisos' => json_encode([
                 'read' => $this->faker->boolean(80),
                 'write' => $this->faker->boolean(60),
