@@ -12,7 +12,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::all();
+        $roles = Role::included()->filter()->sort()->getOrPaginate();
         return response()->json($roles);
     }
 

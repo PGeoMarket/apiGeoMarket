@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Publication extends Model
 {
+    use HasFactory;
     //
     protected $fillable = [
         'titulo',
@@ -16,36 +18,50 @@ class Publication extends Model
         'seller_id',
         'category_id'
     ];
+  // Relaciones que se pueden incluir
+protected $allowIncluded = [
+    'seller',
+    'seller.user',
+    'seller.user.role',
+    'seller.phones',
+    'seller.coordinate',
+    'seller.image',
+    'category',
+    'comments',
+    'comments.user',
+    'comments.user.role',
+    'complaints',
+    'complaints.user',
+    'complaints.reasoncomplaint',
+    'image',
+    'usersWhoFavorited',
+    'usersWhoFavorited.role'
+];
 
-    //en la asignacion masiva supongo que no son necesarias las fechas
+// Campos por los que se puede filtrar
+protected $allowFilter = [
+    'id',
+    'titulo',
+    'precio',
+    'descripcion',
+    'visibilidad',
+    'seller_id',
+    'category_id',
+    'created_at',
+    'updated_at'
+];
 
-    protected $allowIncluded = [
-        'seller',
-        'seller.user',
-        'category',
-        'comments',
-        'comments.user',
-        'usersWhofavorited', //favorite puede cambiar el nombre del modelo a futuro
-        'complaints',
-        'complaints.reasoncomplaint',
-        'chats',
-        'image'
-    ];
-
-    protected $allowFilter = [
-        'id',
-        'titulo',
-        'seller_id',
-        'category_id',
-        'precio'
-    ];
-
-    protected $allowSort = [
-        'id',
-        'titulo',
-        'precio',
-        'fecha_actualizacion' //filtrar por actualizacion o publicacion?
-    ];
+// Campos por los que se puede ordenar
+protected $allowSort = [
+    'id',
+    'titulo',
+    'precio',
+    'visibilidad',
+    'seller_id',
+    'category_id',
+    'created_at',
+    'updated_at'
+];
 
     //Relaciones
     public function seller()
@@ -148,7 +164,7 @@ class Publication extends Model
             }
         }
     }
-
+//
     public function scopeGetOrPaginate(Builder $query)
     {
 

@@ -12,11 +12,7 @@ class UserController extends Controller
     // Listar todos los usuarios
     public function index()
     {
-        $users = User::with('role')
-            ->filter()
-            ->sort()
-            ->getOrPaginate();
-
+       $users = User::included()->filter()->sort()->GetOrPaginate();
         return response()->json($users);
     }
 
