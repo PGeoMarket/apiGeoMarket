@@ -8,37 +8,45 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Seller extends Model
 {
-
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'nombre_tienda',      // Corregido para coincidir con la migración
-        'descripcion',
-        'activo'
-    ];
+ // Relaciones que se pueden incluir
+protected $allowIncluded = [
+    'user',
+    'user.role',
+    'phones',
+    'publications',
+    'publications.category',
+    'publications.comments',
+    'publications.comments.user',
+    'publications.complaints',
+    'publications.image',
+    'publications.coordinate',
+    'publications.usersWhoFavorited',
+    'coordinate',
+    'image'
+];
 
-    // Listas blancas
-    protected $allowIncluded = [
-        'user',
-        'phones',
-        'publications',
-        'image',
-        'coordinate'
-    ];
+// Campos por los que se puede filtrar
+protected $allowFilter = [
+    'id',
+    'user_id',
+    'nombre_tienda',
+    'descripcion',
+    'activo',
+    'created_at',
+    'updated_at'
+];
 
-    protected $allowFilter = [
-        'nombre_tienda',
-        'activo',
-        'user_id'
-    ];
+// Campos por los que se puede ordenar
+protected $allowSort = [
+    'id',
+    'nombre_tienda',
+    'activo',
+    'created_at',
+    'updated_at'
+];
 
-    protected $allowSort = [
-        'id',
-        'nombre_tienda',
-        'activo',
-        'created_at'
-    ];
 
     // Relación: Seller pertenece a un User
     public function user()
@@ -68,17 +76,18 @@ class Seller extends Model
         return $this->morphOne(Coordinate::class, 'coordinateable');
     }
 
-
-    public function scopeIncluded(Builder $query)
+   public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
             return;
         }
 
         $relations = explode(',', request('included'));
+
         $allowIncluded = collect($this->allowIncluded);
 
         foreach ($relations as $key => $relationship) {
+
             if (!$allowIncluded->contains($relationship)) {
                 unset($relations[$key]);
             }
@@ -94,17 +103,20 @@ class Seller extends Model
         }
 
         $filters = request('filter');
+
         $allowFilter = collect($this->allowFilter);
 
         foreach ($filters as $filter => $value) {
+
             if ($allowFilter->contains($filter)) {
-                $query->where($filter, 'LIKE', '%' . $value . '%');
+                $query->WHERE($filter, 'LIKE', '%' . $value . '%');
             }
         }
     }
 
     public function scopeSort(Builder $query)
     {
+
         if (empty($this->allowSort) || empty(request("sort"))) {
             return;
         }
@@ -113,6 +125,7 @@ class Seller extends Model
         $allowSort = collect($this->allowSort);
 
         foreach ($sortFields as $sortField) {
+
             $direction = 'asc';
 
             if (substr($sortField, 0, 1) === "-") {
@@ -120,16 +133,20 @@ class Seller extends Model
                 $sortField = substr($sortField, 1);
             }
 
+            //return $sortField;
+
             if ($allowSort->contains($sortField)) {
                 $query->orderBy($sortField, $direction);
             }
         }
     }
-
+//
     public function scopeGetOrPaginate(Builder $query)
     {
+
         if (request('perPage')) {
             $perPage = intval(request('perPage'));
+
             if ($perPage) {
                 return $query->paginate($perPage);
             }
@@ -138,3 +155,4 @@ class Seller extends Model
         return $query->get();
     }
 }
+

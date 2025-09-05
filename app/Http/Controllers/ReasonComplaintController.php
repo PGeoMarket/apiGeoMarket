@@ -11,7 +11,7 @@ class ReasonComplaintController extends Controller
     public function index()
     {
 
-        $reason_complaint = ReasonComplaint::all();
+        $reason_complaint = ReasonComplaint::included()->filter()->sort()->getOrPaginate();
         return response()->json($reason_complaint);
     }
 

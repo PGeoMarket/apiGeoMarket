@@ -10,50 +10,49 @@ class User extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'primer_nombre',
-        'segundo_nombre',
-        'primer_apellido',
-        'segundo_apellido',
-        'email',
-        'password_hash',
-        'rol_id',
-        'activo'
-    ];
+    // Relaciones que se pueden incluir
+protected $allowIncluded = [
+    'role',
+    'seller',
+    'seller.phones',
+    'seller.publications',
+    'seller.coordinate',
+    'seller.image',
+    'comments',
+    'complaints',
+    'favoritePublications',
+    'favoritePublications.category',
+    'favoritePublications.seller',
+    'favoritePublications.image'
+];
 
-    protected $hidden = [
-        'password_hash'
-    ];
+// Campos por los que se puede filtrar
+protected $allowFilter = [
+    'id',
+    'primer_nombre',
+    'segundo_nombre',
+    'primer_apellido',
+    'segundo_apellido',
+    'email',
+    'role_id',
+    'activo',
+    'created_at',
+    'updated_at'
+];
 
-    // Relaciones permitidas en "included"
-    protected $allowIncluded = [
-        'role',
-        'favoritePublications',
-        'image',
-        'coordinate'
-    ];
+// Campos por los que se puede ordenar
+protected $allowSort = [
+    'id',
+    'primer_nombre',
+    'primer_apellido',
+    'email',
+    'role_id',
+    'activo',
+    'created_at',
+    'updated_at'
+];
 
-    // Campos permitidos en "filter"
-    protected $allowFilter = [
-        'id',
-        'primer_nombre',
-        'primer_apellido',
-        'email',
-        'rol_id',
-        'activo'
-    ];
 
-    // Campos permitidos en "sort"
-    protected $allowSort = [
-        'id',
-        'primer_nombre',
-        'primer_apellido',
-        'email',
-        'created_at',
-        'updated_at'
-    ];
-
- 
     public function role()
     {
         return $this->belongsTo(Role::class);
@@ -64,11 +63,13 @@ class User extends Model
         return $this->belongsToMany(Publication::class);
     }
 
-    public function complaints(){
+    public function complaints()
+    {
         return $this->hasMany(Complaint::class);
     }
 
-    public function seller()  {
+    public function seller()
+    {
         return $this->hasOne(Seller::class);
     }
 
@@ -87,9 +88,6 @@ class User extends Model
         return $this->morphOne(Coordinate::class, 'coordinateable');
     }
 
-
-
-
     public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
@@ -97,9 +95,11 @@ class User extends Model
         }
 
         $relations = explode(',', request('included'));
+
         $allowIncluded = collect($this->allowIncluded);
 
         foreach ($relations as $key => $relationship) {
+
             if (!$allowIncluded->contains($relationship)) {
                 unset($relations[$key]);
             }
@@ -115,17 +115,20 @@ class User extends Model
         }
 
         $filters = request('filter');
+
         $allowFilter = collect($this->allowFilter);
 
         foreach ($filters as $filter => $value) {
+
             if ($allowFilter->contains($filter)) {
-                $query->where($filter, 'LIKE', '%' . $value . '%');
+                $query->WHERE($filter, 'LIKE', '%' . $value . '%');
             }
         }
     }
 
     public function scopeSort(Builder $query)
     {
+
         if (empty($this->allowSort) || empty(request("sort"))) {
             return;
         }
@@ -134,6 +137,7 @@ class User extends Model
         $allowSort = collect($this->allowSort);
 
         foreach ($sortFields as $sortField) {
+
             $direction = 'asc';
 
             if (substr($sortField, 0, 1) === "-") {
@@ -141,16 +145,20 @@ class User extends Model
                 $sortField = substr($sortField, 1);
             }
 
+            //return $sortField;
+
             if ($allowSort->contains($sortField)) {
                 $query->orderBy($sortField, $direction);
             }
         }
     }
-
+//
     public function scopeGetOrPaginate(Builder $query)
     {
+
         if (request('perPage')) {
             $perPage = intval(request('perPage'));
+
             if ($perPage) {
                 return $query->paginate($perPage);
             }
@@ -159,3 +167,4 @@ class User extends Model
         return $query->get();
     }
 }
+

@@ -26,8 +26,7 @@ route::apiResource('users',UserController::class);
 
 route::get('users/{id}/favorites',[UserController::class,'favoritos']); 
 
-
-
+Route::get('publications', [PublicationController::class, 'index']);
 
 
 

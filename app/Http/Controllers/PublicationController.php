@@ -10,9 +10,10 @@ class PublicationController extends Controller
 {
     public function index()
     {   
-        $publications = Publication::included()->filter()->sort()->GetOrPaginate();
+       $publications = Publication::included()->filter()->sort()->getOrPaginate();
         return response()->json($publications);
     }
+
 
     public function store(Request $request)
     {
@@ -56,7 +57,7 @@ class PublicationController extends Controller
             'comments.user',
             'usersWhoFavorited',
             'complaints',
-            'complaints.reasoncomplaint',
+            'complaints.reasonComplaint',
             'image'
         ])->findOrFail($publication->id);
 
@@ -116,3 +117,4 @@ class PublicationController extends Controller
         ], 400);
     }
 }
+    
