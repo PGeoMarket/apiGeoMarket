@@ -57,8 +57,8 @@ protected $fillable = [
         'primer_apellido',
         'segundo_apellido',
         'email',
-        'password',
-        'rol_id',
+        'password_hash',
+        'role_id',
         'activo'
     ];
 
