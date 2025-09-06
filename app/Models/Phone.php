@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Phone extends Model
 {
 
-
+    use HasFactory;
 
     protected $allowIncluded = [
     'seller',
