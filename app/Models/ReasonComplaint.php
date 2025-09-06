@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class ReasonComplaint extends Model
 {
 
+    use HasFactory;
+    
     protected $allowIncluded = [
         'complaints',
         'complaints.user',
