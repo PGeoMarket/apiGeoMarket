@@ -1,7 +1,6 @@
 <?php
-
+// PublicationSeeder.php
 namespace Database\Seeders;
-
 use App\Models\Publication;
 use App\Models\Seller;
 use App\Models\Category;
@@ -13,17 +12,30 @@ class PublicationSeeder extends Seeder
     {
         $sellers = Seller::all();
         $categories = Category::all();
-        // Cada seller tiene entre 1-10 publicaciones
+
+        if ($sellers->isEmpty() || $categories->isEmpty()) {
+            $this->command->warn('No hay sellers o categorías disponibles para crear publicaciones');
+            return;
+        }
+
+        // Cada seller tiene entre 1-8 publicaciones
         foreach ($sellers as $seller) {
-            Publication::factory(rand(1, 10))->create([
-                'seller_id' => $seller->id,
+            $publicationCount = rand(1, 8);
+            
+            for ($i = 0; $i < $publicationCount; $i++) {
+                Publication::factory()->create([
+                    'seller_id' => $seller->id,
+                    'category_id' => $categories->random()->id,
+                ]);
+            }
+        }
+
+        // Publicaciones adicionales con distribución aleatoria
+        for ($i = 0; $i < 100; $i++) {
+            Publication::factory()->create([
+                'seller_id' => $sellers->random()->id,
                 'category_id' => $categories->random()->id,
             ]);
         }
-        // Publicaciones adicionales
-        Publication::factory(50)->create([
-            'seller_id' => $sellers->random()->id,
-            'category_id' => $categories->random()->id,
-        ]);
     }
 }

@@ -1,7 +1,6 @@
 <?php
-
+// ImageSeeder.php
 namespace Database\Seeders;
-
 use App\Models\Image;
 use App\Models\User;
 use App\Models\Seller;
@@ -16,25 +15,31 @@ class ImageSeeder extends Seeder
         $sellers = Seller::all();
         $publications = Publication::all();
 
-        // Imágenes de perfil para usuarios (60% de los usuarios)
-        foreach ($users->random($users->count() * 0.6) as $user) {
-            Image::factory()->forUser()->create([
+        // 60% de usuarios tienen imagen de perfil
+        $usersWithImages = $users->random(intval($users->count() * 0.6));
+        foreach ($usersWithImages as $user) {
+            Image::factory()->create([
+                'imageable_type' => User::class,
                 'imageable_id' => $user->id,
             ]);
         }
 
-        // Imágenes de portada para sellers (70% de los sellers)
-        foreach ($sellers->random($sellers->count() * 0.7) as $seller) {
-            Image::factory()->forSeller()->create([
+        // 70% de sellers tienen imagen de portada
+        $sellersWithImages = $sellers->random(intval($sellers->count() * 0.7));
+        foreach ($sellersWithImages as $seller) {
+            Image::factory()->create([
+                'imageable_type' => Seller::class,
                 'imageable_id' => $seller->id,
             ]);
         }
 
-        // Imágenes para publicaciones (1-5 imágenes por publicación)
+        // Cada publicación tiene entre 1-4 imágenes
         foreach ($publications as $publication) {
-            $imageCount = rand(1, 5);
+            $imageCount = rand(1, 4);
+            
             for ($i = 0; $i < $imageCount; $i++) {
-                Image::factory()->forPublication()->create([
+                Image::factory()->create([
+                    'imageable_type' => Publication::class,
                     'imageable_id' => $publication->id,
                 ]);
             }

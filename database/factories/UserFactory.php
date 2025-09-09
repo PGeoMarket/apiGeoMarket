@@ -1,16 +1,14 @@
 <?php
-
+// UserFactory.php
 namespace Database\Factories;
-
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use App\Models\Role;
 
 class UserFactory extends Factory
 {
     protected $model = User::class;
-
+    
     public function definition(): array
     {
         return [
@@ -20,8 +18,8 @@ class UserFactory extends Factory
             'segundo_apellido' => $this->faker->optional(0.7)->lastName(),
             'email' => $this->faker->unique()->safeEmail(),
             'password_hash' => Hash::make('password'),
-            'role_id' => Role::factory(), // CORREGIDO: era rol_id
             'activo' => $this->faker->boolean(90),
+            // role_id se asignará en el seeder
         ];
     }
 }

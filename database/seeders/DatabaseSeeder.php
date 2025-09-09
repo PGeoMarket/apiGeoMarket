@@ -1,7 +1,6 @@
 <?php
-
+// DatabaseSeeder.php
 namespace Database\Seeders;
-
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -9,18 +8,31 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            RoleSeeder::class,          // PRIMERO - requerido por users
+            // Primero los datos base (sin FK)
+            RoleSeeder::class,
+            CategorySeeder::class, 
+            ReasonComplaintSeeder::class,
+            
+            // Luego usuarios (dependen de roles)
             UserSeeder::class,
+            
+            // Sellers (dependen de usuarios)
             SellerSeeder::class,
             PhoneSeeder::class,
-            CategorySeeder::class,
+            
+            // Publicaciones (dependen de sellers y categorías)
             PublicationSeeder::class,
-            CoordinateSeeder::class,    // NUEVO - después de users y sellers
-            ImageSeeder::class,         // NUEVO - después de users, sellers y publications
+            
+            // Datos que usan polimorfismo
+            CoordinateSeeder::class,
+            ImageSeeder::class,
+            
+            // Comentarios y quejas (dependen de users y publications)
             CommentSeeder::class,
-            ReasonComplaintSeeder::class,
             ComplaintSeeder::class,
-            PublicationUserSeeder::class, // Tabla pivote al final
+            
+            // Tabla pivote al final
+            PublicationUserSeeder::class,
         ]);
     }
 }

@@ -1,7 +1,6 @@
 <?php
-
+// RoleSeeder.php
 namespace Database\Seeders;
-
 use App\Models\Role;
 use Illuminate\Database\Seeder;
 
@@ -9,9 +8,9 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        // Roles predefinidos
+        // Solo los 3 roles principales necesarios
         Role::create([
-            'nombre' => 'Super Admin',
+            'nombre' => 'Admin',
             'permisos' => json_encode([
                 'read' => true,
                 'write' => true,
@@ -21,8 +20,9 @@ class RoleSeeder extends Seeder
                 'manage_roles' => true,
             ]),
         ]);
+
         Role::create([
-            'nombre' => 'Vendedor',
+            'nombre' => 'Vendedor', 
             'permisos' => json_encode([
                 'read' => true,
                 'write' => true,
@@ -32,6 +32,7 @@ class RoleSeeder extends Seeder
                 'manage_shop' => true,
             ]),
         ]);
+
         Role::create([
             'nombre' => 'Usuario',
             'permisos' => json_encode([
@@ -43,7 +44,8 @@ class RoleSeeder extends Seeder
                 'favorite' => true,
             ]),
         ]);
-        // Roles adicionales con factory
-        Role::factory(50)->create();
+        
+        // Solo algunos roles adicionales si es necesario
+        Role::factory(7)->create();
     }
 }

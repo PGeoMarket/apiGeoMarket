@@ -1,20 +1,13 @@
 <?php
-// ============================================================================
-// FACTORIES CORREGIDOS
-// ============================================================================
-
-// CoordinateFactory.php - NUEVO
+// CoordinateFactory.php
 namespace Database\Factories;
-
 use App\Models\Coordinate;
-use App\Models\User;
-use App\Models\Seller;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CoordinateFactory extends Factory
 {
     protected $model = Coordinate::class;
-
+    
     public function definition(): array
     {
         return [
@@ -22,25 +15,5 @@ class CoordinateFactory extends Factory
             'longitud' => $this->faker->longitude(-82.0, -66.0), // Colombia coords
             'direccion' => $this->faker->address(),
         ];
-    }
-
-    public function forUser()
-    {
-        return $this->state(function (array $attributes) {
-            return [
-                'coordinateable_type' => User::class,
-                'coordinateable_id' => User::factory(),
-            ];
-        });
-    }
-
-    public function forSeller()
-    {
-        return $this->state(function (array $attributes) {
-            return [
-                'coordinateable_type' => Seller::class,
-                'coordinateable_id' => Seller::factory(),
-            ];
-        });
     }
 }

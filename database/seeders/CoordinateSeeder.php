@@ -1,7 +1,6 @@
 <?php
-
+// CoordinateSeeder.php
 namespace Database\Seeders;
-
 use App\Models\Coordinate;
 use App\Models\User;
 use App\Models\Seller;
@@ -14,19 +13,22 @@ class CoordinateSeeder extends Seeder
         $users = User::all();
         $sellers = Seller::all();
 
-        // Coordenadas para usuarios (80% de los usuarios)
-        foreach ($users->random($users->count() * 0.8) as $user) {
-            Coordinate::factory()->forUser()->create([
+        // 80% de usuarios tienen coordenadas
+        $usersWithCoords = $users->random(intval($users->count() * 0.8));
+        foreach ($usersWithCoords as $user) {
+            Coordinate::factory()->create([
+                'coordinateable_type' => User::class,
                 'coordinateable_id' => $user->id,
             ]);
         }
 
-        // Coordenadas para sellers (90% de los sellers)
-        foreach ($sellers->random($sellers->count() * 0.9) as $seller) {
-            Coordinate::factory()->forSeller()->create([
+        // 90% de sellers tienen coordenadas
+        $sellersWithCoords = $sellers->random(intval($sellers->count() * 0.9));
+        foreach ($sellersWithCoords as $seller) {
+            Coordinate::factory()->create([
+                'coordinateable_type' => Seller::class,
                 'coordinateable_id' => $seller->id,
             ]);
         }
     }
 }
-

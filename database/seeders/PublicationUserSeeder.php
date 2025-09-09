@@ -1,7 +1,6 @@
 <?php
-
+// PublicationUserSeeder.php
 namespace Database\Seeders;
-
 use App\Models\User;
 use App\Models\Publication;
 use Illuminate\Database\Seeder;
@@ -12,14 +11,30 @@ class PublicationUserSeeder extends Seeder
     {
         $users = User::all();
         $publications = Publication::where('visibilidad', true)->get();
-        // Cada usuario tiene publicaciones favoritas/guardadas
-        foreach ($users->take(30) as $user) {
-            $randomPublications = $publications->random(rand(1, 8));
-            $user->favoritePublications()->attach($randomPublications->pluck('id'));
+
+        if ($users->isEmpty() || $publications->isEmpty()) {
+            $this->command->warn('No hay usuarios o publicaciones para crear favoritos');
+            return;
         }
-        // Algunos usuarios tienen muchas publicaciones guardadas
-        foreach ($users->random(10) as $user) {
-            $randomPublications = $publications->random(rand(10, 25));
+
+        // 40% de usuarios tienen publicaciones favoritas
+        $usersWithFavorites = $users->random(intval($users->count() * 0.4));
+        
+        foreach ($usersWithFavorites as $user) {
+            // Cada usuario marca entre 1-12 publicaciones como favoritas
+            $favoriteCount = rand(1, 12);
+            $randomPublications = $publications->random($favoriteCount);
+            
+            // Usar syncWithoutDetaching para evitar duplicados
+            $user->favoritePublications()->syncWithoutDetaching($randomPublications->pluck('id'));
+        }
+
+        // Algunos usuarios super activos con muchos favoritos
+        $superActiveUsers = $users->random(8);
+        foreach ($superActiveUsers as $user) {
+            $favoriteCount = rand(15, 30);
+            $randomPublications = $publications->random($favoriteCount);
+            
             $user->favoritePublications()->syncWithoutDetaching($randomPublications->pluck('id'));
         }
     }
