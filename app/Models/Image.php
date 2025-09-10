@@ -14,6 +14,7 @@ class Image extends Model
     protected $fillable = [
         'url',
         'imageable_id',
+        'public_id',
         'imageable_type',
     ];
     protected $allowIncluded = [
