@@ -9,8 +9,9 @@ use App\Models\Image;
 class PublicationController extends Controller
 {
     public function index()
-    {   
+    {
        $publications = Publication::included()->filter()->sort()->getOrPaginate();
+       $publications = Publication::with('image')->get();
         return response()->json($publications);
     }
 
@@ -117,4 +118,3 @@ class PublicationController extends Controller
         ], 400);
     }
 }
-    
