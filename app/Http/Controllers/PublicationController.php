@@ -10,7 +10,7 @@ class PublicationController extends Controller
 {
     public function index()
     {
-       $publications = Publication::included()->filter()->sort()->getOrPaginate();
+        $publications = Publication::included()->filter()->sort()->getOrPaginate();
         return response()->json($publications);
     }
 
@@ -23,12 +23,14 @@ class PublicationController extends Controller
             'descripcion' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
             'seller_id'   => 'required|exists:sellers,id',
-
-            // extra
-            'imagen'      => 'nullable|string|url',
+            'image.url'   => 'required|string|url',
         ]);
 
-        // Crear publicación
+        // ✅ Guardar la URL de la imagen y eliminarla de $data
+        $imageUrl = $data['image']['url'];
+        unset($data['image']); // evita que Eloquent busque una columna 'image'
+
+        // ✅ Crear la publicación
         $publication = Publication::create($data);
 
         if (!$publication) {
@@ -37,10 +39,10 @@ class PublicationController extends Controller
             ], 400);
         }
 
-        // Asociar imagen si viene
-        if (!empty($data['imagen'])) {
-            $publication->image()->create(['url' => $data['imagen']]);
-        }
+        // ✅ Crear la imagen relacionada
+        $publication->image()->create([
+            'url' => $imageUrl,
+        ]);
 
         return response()->json([
             'message'     => 'Publicación creada correctamente.',
