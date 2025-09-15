@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Image;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ImageController extends Controller
 {
@@ -16,12 +17,23 @@ class ImageController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'url'             => 'required|string|url',
-            'imageable_id'    => 'required|integer',
-            'imageable_type'  => 'required|string',
+            'imageable_id'   => 'required|integer',
+            'imageable_type' => 'required|string',
+            'imagen'         => 'required|image|max:10240', // archivo de imagen
         ]);
 
-        $image = Image::create($data);
+        // Subir a Cloudinary
+        $upload = cloudinary()->uploadApi()->upload(
+            $request->file('imagen')->getRealPath(),
+            ['folder' => 'general_images'] // carpeta opcional
+        );
+
+        $image = Image::create([
+            'url'            => $upload['secure_url'],
+            'public_id'      => $upload['public_id'],
+            'imageable_id'   => $data['imageable_id'],
+            'imageable_type' => $data['imageable_type'],
+        ]);
 
         if (!$image) {
             return response()->json([
@@ -37,18 +49,41 @@ class ImageController extends Controller
 
     public function show(Image $image)
     {
-        //
+        return response()->json($image);
     }
 
     public function update(Request $request, Image $image)
     {
         $data = $request->validate([
-            'url'             => 'required|string|url',
-            'imageable_id'    => 'required|integer',
-            'imageable_type'  => 'required|string',
+            'imagen'         => 'nullable|image|max:10240',
+            'imageable_id'   => 'required|integer',
+            'imageable_type' => 'required|string',
         ]);
 
-        $image->update($data);
+        // Si hay nueva imagen, reemplazar en Cloudinary
+        if ($request->hasFile('imagen')) {
+            if ($image->public_id) {
+                cloudinary()->uploadApi()->destroy($image->public_id);
+            }
+
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('imagen')->getRealPath(),
+                ['folder' => 'general_images']
+            );
+
+            $image->update([
+                'url'            => $upload['secure_url'],
+                'public_id'      => $upload['public_id'],
+                'imageable_id'   => $data['imageable_id'],
+                'imageable_type' => $data['imageable_type'],
+            ]);
+        } else {
+            // Solo actualizar relaciones
+            $image->update([
+                'imageable_id'   => $data['imageable_id'],
+                'imageable_type' => $data['imageable_type'],
+            ]);
+        }
 
         return response()->json([
             'message' => 'Imagen actualizada correctamente.',
@@ -64,6 +99,11 @@ class ImageController extends Controller
             return response()->json([
                 'error' => 'Imagen no encontrada.'
             ], 404);
+        }
+
+        // Eliminar de Cloudinary también
+        if ($image->public_id) {
+            cloudinary()->uploadApi()->destroy($image->public_id);
         }
 
         if ($image->delete()) {

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Models\Image;
 use App\Models\Coordinate;
+
 class UserController extends Controller
 {
     // Listar todos los usuarios
@@ -36,7 +38,7 @@ class UserController extends Controller
             'activo'           => 'boolean',
 
             // extras
-            'foto'      => 'nullable|string|url',
+            'imagen'      => 'nullable|image|max:10240', // archivo imagen, 10MB máx
             'latitud'   => 'nullable|numeric',
             'longitud'  => 'nullable|numeric',
             'direccion' => 'nullable|string',
@@ -53,9 +55,17 @@ class UserController extends Controller
             return response()->json(['message' => 'No se pudo crear el usuario.'], 400);
         }
 
-        // Asociar imagen si viene
-        if (!empty($data['foto'])) {
-            $user->image()->create(['url' => $data['foto']]);
+        // Subir imagen a Cloudinary si viene
+        if ($request->hasFile('imagen')) {
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('imagen')->getRealPath(),
+                ['folder' => 'users'] // carpeta específica para usuarios
+            );
+
+            $user->image()->create([
+                'url'       => $upload['secure_url'],
+                'public_id' => $upload['public_id'],
+            ]);
         }
 
         // Asociar coordenada si viene
@@ -109,7 +119,7 @@ class UserController extends Controller
             'activo'           => 'boolean',
 
             // extras
-            'foto'      => 'nullable|string|url',
+            'imagen'      => 'nullable|image|max:10240', // archivo imagen, 10MB máx
             'latitud'   => 'nullable|numeric',
             'longitud'  => 'nullable|numeric',
             'direccion' => 'nullable|string',
@@ -127,13 +137,24 @@ class UserController extends Controller
             return response()->json(['message' => 'No se pudo actualizar el usuario.'], 400);
         }
 
-        // Actualizar/crear imagen
-        if (!empty($data['foto'])) {
-            if ($user->image) {
-                $user->image->update(['url' => $data['foto']]);
-            } else {
-                $user->image()->create(['url' => $data['foto']]);
+        // Si viene nueva imagen, reemplazar en Cloudinary
+        if ($request->hasFile('imagen')) {
+            // 1. Eliminar la anterior de Cloudinary si existe
+            if ($user->image && $user->image->public_id) {
+                cloudinary()->uploadApi()->destroy($user->image->public_id);
+                $user->image->delete();
             }
+
+            // 2. Subir la nueva imagen
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('imagen')->getRealPath(),
+                ['folder' => 'users']
+            );
+
+            $user->image()->create([
+                'url'       => $upload['secure_url'],
+                'public_id' => $upload['public_id'],
+            ]);
         }
 
         // Actualizar/crear coordenada
@@ -162,6 +183,12 @@ class UserController extends Controller
     // Eliminar usuario
     public function destroy(User $user)
     {
+        // Eliminar imagen de Cloudinary si existe
+        if ($user->image && $user->image->public_id) {
+            cloudinary()->uploadApi()->destroy($user->image->public_id);
+            $user->image->delete();
+        }
+
         if ($user->delete()) {
             return response()->json(['message' => 'Usuario eliminado correctamente.'], 200);
         }
@@ -195,6 +222,4 @@ class UserController extends Controller
         
         return response()->json(['message' => $message]);
     }
-
-
 }

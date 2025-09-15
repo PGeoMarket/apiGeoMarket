@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->string('url');
+            $table->string('public_id')->nullable();
             $table->morphs('imageable');
         });
     }
