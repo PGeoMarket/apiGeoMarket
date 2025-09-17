@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChatSupportController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\ORMController;
@@ -36,3 +37,6 @@ Route::patch('users/{userId}/favorites/toggle', [UserController::class, 'toggleF
 
 Route::get('orm/test-all', [ORMController::class, 'testAllRelations']);
 Route::get('orm/test-polymorphic', [ORMController::class, 'testPolymorphicRelations']);
+
+
+Route::post('/support', [ChatSupportController::class, 'store']);

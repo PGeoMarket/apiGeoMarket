@@ -11,47 +11,49 @@ class User extends Model
     use HasFactory;
 
     // Relaciones que se pueden incluir
-protected $allowIncluded = [
-    'role',
-    'seller',
-    'seller.phones',
-    'seller.publications',
-    'seller.coordinate',
-    'seller.image',
-    'comments',
-    'complaints',
-    'favoritePublications',
-    'favoritePublications.category',
-    'favoritePublications.seller',
-    'favoritePublications.image'
-];
+    protected $allowIncluded = [
+        'role',
+        'seller',
+        'seller.phones',
+        'seller.publications',
+        'seller.coordinate',
+        'seller.image',
+        'comments',
+        'complaints',
+        'favoritePublications',
+        'favoritePublications.category',
+        'favoritePublications.seller',
+        'favoritePublications.image',
+        'chatsupport',
+        'image'
+    ];
 
-// Campos por los que se puede filtrar
-protected $allowFilter = [
-    'id',
-    'primer_nombre',
-    'segundo_nombre',
-    'primer_apellido',
-    'segundo_apellido',
-    'email',
-    'role_id',
-    'activo',
-    'created_at',
-    'updated_at'
-];
+    // Campos por los que se puede filtrar
+    protected $allowFilter = [
+        'id',
+        'primer_nombre',
+        'segundo_nombre',
+        'primer_apellido',
+        'segundo_apellido',
+        'email',
+        'role_id',
+        'activo',
+        'created_at',
+        'updated_at'
+    ];
 
-// Campos por los que se puede ordenar
-protected $allowSort = [
-    'id',
-    'primer_nombre',
-    'primer_apellido',
-    'email',
-    'role_id',
-    'activo',
-    'created_at',
-    'updated_at'
-];
-protected $fillable = [
+    // Campos por los que se puede ordenar
+    protected $allowSort = [
+        'id',
+        'primer_nombre',
+        'primer_apellido',
+        'email',
+        'role_id',
+        'activo',
+        'created_at',
+        'updated_at'
+    ];
+    protected $fillable = [
         'primer_nombre',
         'segundo_nombre',
         'primer_apellido',
@@ -96,6 +98,11 @@ protected $fillable = [
     public function coordinate()
     {
         return $this->morphOne(Coordinate::class, 'coordinateable');
+    }
+
+    public function chatsupport()
+    {
+        return $this->hasMany(ChatSupport::class);
     }
 
     public function scopeIncluded(Builder $query)
@@ -162,7 +169,7 @@ protected $fillable = [
             }
         }
     }
-//
+    //
     public function scopeGetOrPaginate(Builder $query)
     {
 
@@ -177,4 +184,3 @@ protected $fillable = [
         return $query->get();
     }
 }
-
