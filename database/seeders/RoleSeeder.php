@@ -45,7 +45,5 @@ class RoleSeeder extends Seeder
             ]),
         ]);
         
-        // Solo algunos roles adicionales si es necesario
-        Role::factory(7)->create();
     }
 }

@@ -20,7 +20,7 @@ class ChatSupportController extends Controller
 
         $supportRequest = ChatSupport::create([
             'mensaje' => $request->mensaje,
-            'user_id' => $request->user_id,
+            'user_id' => auth::id(),
             'fecha_mensaje' => now()
         ]);
         $supportRequest->load('user');

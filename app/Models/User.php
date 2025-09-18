@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Model
 {
-    use HasFactory;
+    use HasFactory,HasApiTokens;
 
     // Relaciones que se pueden incluir
     protected $allowIncluded = [
@@ -64,6 +65,15 @@ class User extends Model
         'activo'
     ];
 
+    protected $hidden = [
+        'password_hash',
+        'remember_token',
+    ];
+
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
 
     public function role()
     {
