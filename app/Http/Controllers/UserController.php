@@ -27,6 +27,9 @@ class UserController extends Controller
     // Guardar usuario
     public function store(Request $request)
     {
+        // Este método ahora es solo para que el admin cree usuarios
+        // El registro público lo maneja AuthController
+
         $data = $request->validate([
             'primer_nombre'    => 'required|string|max:100',
             'segundo_nombre'   => 'nullable|string|max:100',
