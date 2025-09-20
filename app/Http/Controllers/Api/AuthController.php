@@ -33,9 +33,9 @@ class AuthController extends Controller
         if ($request->role_id == 2) {
             $baseRules['nombre_tienda'] = 'required|string|max:255';
             $baseRules['descripcion'] = 'nullable|string';
-            $baseRules['latitud'] = 'required|numeric';
-            $baseRules['longitud'] = 'required|numeric';
-            $baseRules['direccion'] = 'required|string';
+            $baseRules['latitud'] = 'nullable|numeric';
+            $baseRules['longitud'] = 'nullable|numeric';
+            $baseRules['direccion'] = 'nullable|string';
         }
 
         $data = $request->validate($baseRules);
