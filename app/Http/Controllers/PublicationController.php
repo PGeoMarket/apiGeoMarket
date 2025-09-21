@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Publication;
 use Illuminate\Http\Request;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary; 
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Models\Image;
 
 class PublicationController extends Controller
@@ -58,16 +58,7 @@ class PublicationController extends Controller
 
     public function show(Publication $publication)
     {
-        $publication = Publication::with([
-            'seller',
-            'seller.user',
-            'category',
-            'comments.user',
-            'usersWhoFavorited',
-            'complaints',
-            'complaints.reasonComplaint',
-            'image'
-        ])->findOrFail($publication->id);
+        $publication = Publication::included()->findOrFail($publication->id);
 
         return response()->json($publication);
     }
@@ -139,5 +130,5 @@ class PublicationController extends Controller
         ], 400);
     }
 
-    
+
 }
