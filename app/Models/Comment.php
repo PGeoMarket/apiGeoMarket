@@ -10,40 +10,43 @@ class Comment extends Model
 {
 
     use HasFactory;
-    protected $fillable=[
-        'texto','valor_estrella','user_id','publication_id'
+    protected $fillable = [
+        'texto',
+        'valor_estrella',
+        'user_id',
+        'publication_id'
     ];
-protected $allowIncluded = [
-    'user',
-    'user.role',
-    'user.seller',
-    'publication',
-    'publication.seller',
-    'publication.seller.user',
-    'publication.image',
-    'publication.category'
-];
+    protected $allowIncluded = [
+        'user',
+        'user.role',
+        'user.seller',
+        'publication',
+        'publication.seller',
+        'publication.seller.user',
+        'publication.image',
+        'publication.category'
+    ];
 
-// Campos por los que se puede filtrar
-protected $allowFilter = [
-    'id',
-    'texto',
-    'valor_estrella',
-    'user_id',
-    'publication_id',
-    'created_at',
-    'updated_at'
-];
+    // Campos por los que se puede filtrar
+    protected $allowFilter = [
+        'id',
+        'texto',
+        'valor_estrella',
+        'user_id',
+        'publication_id',
+        'created_at',
+        'updated_at'
+    ];
 
-// Campos por los que se puede ordenar
-protected $allowSort = [
-    'id',
-    'valor_estrella',
-    'user_id',
-    'publication_id',
-    'created_at',
-    'updated_at'
-];
+    // Campos por los que se puede ordenar
+    protected $allowSort = [
+        'id',
+        'valor_estrella',
+        'user_id',
+        'publication_id',
+        'created_at',
+        'updated_at'
+    ];
 
 
     // Relaciones
@@ -57,7 +60,7 @@ protected $allowSort = [
         return $this->belongsTo(Publication::class, 'publication_id');
     }
 
-    
+
     public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
@@ -85,13 +88,17 @@ protected $allowSort = [
         }
 
         $filters = request('filter');
-
         $allowFilter = collect($this->allowFilter);
 
         foreach ($filters as $filter => $value) {
 
             if ($allowFilter->contains($filter)) {
-                $query->WHERE($filter, 'LIKE', '%' . $value . '%');
+
+                if (in_array($filter, ['id', 'user_id', 'publication_id', 'valor_estrella'])) {
+                    $query->where($filter, $value); // comparación exacta
+                } else {
+                    $query->where($filter, 'LIKE', '%' . $value . '%'); // búsqueda parcial
+                }
             }
         }
     }
