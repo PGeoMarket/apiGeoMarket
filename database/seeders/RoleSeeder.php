@@ -34,7 +34,7 @@ class RoleSeeder extends Seeder
         ]);
 
         Role::create([
-            'nombre' => 'Usuario',
+            'nombre' => 'consumidor',
             'permisos' => json_encode([
                 'read' => true,
                 'write' => false,

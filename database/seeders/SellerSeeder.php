@@ -22,7 +22,7 @@ class SellerSeeder extends Seeder
         }
 
         // Algunos usuarios adicionales también pueden ser sellers ocasionalmente
-        $otrosUsuarios = User::whereHas('role', function ($query) {
+/*         $otrosUsuarios = User::whereHas('role', function ($query) {
             $query->where('nombre', 'Usuario');
         })->inRandomOrder()->take(5)->get();
 
@@ -30,6 +30,6 @@ class SellerSeeder extends Seeder
             Seller::factory()->create([
                 'user_id' => $usuario->id,
             ]);
-        }
+        } */
     }
 }

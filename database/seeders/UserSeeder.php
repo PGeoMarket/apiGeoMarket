@@ -12,8 +12,8 @@ class UserSeeder extends Seeder
     {
         $adminRole = Role::where('nombre', 'Admin')->first();
         $vendedorRole = Role::where('nombre', 'Vendedor')->first();
-        $usuarioRole = Role::where('nombre', 'Usuario')->first();
-        $otherRoles = Role::whereNotIn('nombre', ['Admin', 'Vendedor', 'Usuario'])->get();
+        $usuarioRole = Role::where('nombre', 'consumidor')->first();
+        $otherRoles = Role::whereNotIn('nombre', ['Admin', 'Vendedor', 'consumidor'])->get();
 
         // Usuario administrador
         User::create([
