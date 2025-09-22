@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Mail\ChatSupportMail;
-use App\Models\ChatSupport;
-use App\Mail\SupportRequest;
+use App\Mail\SupportMail;
+use App\Models\Support;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
-class ChatSupportController extends Controller
+class SupportController extends Controller
 {
     public function store(Request $request)
     {
@@ -18,15 +16,15 @@ class ChatSupportController extends Controller
             'mensaje' => 'required|string|max:2000'
         ]);
 
-        $supportRequest = ChatSupport::create([
+        $supportRequest = Support::create([
             'mensaje' => $request->mensaje,
-            'user_id' => auth::id(),
+            'user_id' => $request->user_id,
             'fecha_mensaje' => now()
         ]);
         $supportRequest->load('user');
 
         // Enviar correo al equipo de soporte
-       Mail::to('geomarkethelp@gmail.com')->send(new ChatSupportMail($supportRequest));
+       Mail::to('geomarkethelp@gmail.com')->send(new SupportMail($supportRequest));
 
 
         return response()->json([
@@ -37,11 +35,10 @@ class ChatSupportController extends Controller
 
     public function index()
     {
-        $requests = ChatSupport::with('user')
+        $requests = Support::with('user')
                               ->orderBy('fecha_mensaje', 'desc')
                               ->paginate(20);
 
         return response()->json($requests);
     }
-
 }

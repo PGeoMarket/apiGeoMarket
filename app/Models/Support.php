@@ -1,14 +1,12 @@
 <?php
 
-// MODELO - app/Models/ChatSupport.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ChatSupport extends Model
+class Support extends Model
 {
-    protected $table = 'chats_support';
+    protected $table = 'supports';
     
     protected $fillable = [
         'mensaje',
@@ -23,8 +21,7 @@ class ChatSupport extends Model
     // Desactivar timestamps automáticos de Laravel
     public $timestamps = false;
 
-    public function user(): BelongsTo
-    {
+    public function user(){
         return $this->belongsTo(User::class);
     }
 }
