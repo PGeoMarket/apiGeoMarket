@@ -17,7 +17,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
-
+use App\Http\Controllers\SupportController;
 
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('comments', CommentController::class);
@@ -40,7 +40,7 @@ Route::get('orm/test-all', [ORMController::class, 'testAllRelations']);
 Route::get('orm/test-polymorphic', [ORMController::class, 'testPolymorphicRelations']);
 
 
-Route::post('/support', [ChatSupportController::class, 'store']);
+Route::post('/support', [SupportController::class, 'store']);
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

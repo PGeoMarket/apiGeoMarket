@@ -25,7 +25,7 @@ class User extends Model
         'favoritePublications.category',
         'favoritePublications.seller',
         'favoritePublications.image',
-        'chatsupport',
+        'support',
         'image'
     ];
 
@@ -110,9 +110,9 @@ class User extends Model
         return $this->morphOne(Coordinate::class, 'coordinateable');
     }
 
-    public function chatsupport()
+    public function supports()
     {
-        return $this->hasMany(ChatSupport::class);
+        return $this->hasMany(Support::class);
     }
 
     public function scopeIncluded(Builder $query)
