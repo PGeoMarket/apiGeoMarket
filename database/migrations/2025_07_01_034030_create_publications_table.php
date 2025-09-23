@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('precio');
             $table->text('descripcion');
             $table->boolean('visibilidad')->default(true);
+            $table->tinyInteger('puntuacion_promedio')->default(0);
             $table->unsignedBigInteger('seller_id');   // o seria user_id?
             $table->unsignedBigInteger('category_id');    // id_categoria
 

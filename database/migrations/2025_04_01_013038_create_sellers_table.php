@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('descripcion')->nullable();
 
             $table->boolean('activo')->default(true);
-
+            $table->tinyInteger('puntuacion_promedio')->default(0);
             $table->timestamps();
         });
     }
