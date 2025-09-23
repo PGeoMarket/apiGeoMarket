@@ -14,7 +14,7 @@ class UserController extends Controller
     // Listar todos los usuarios
     public function index()
     {
-       $users = User::included()->filter()->sort()->GetOrPaginate();
+        $users = User::included()->filter()->sort()->GetOrPaginate();
         return response()->json($users);
     }
 
@@ -204,11 +204,9 @@ class UserController extends Controller
     {
         $usuario = User::with('favoritePublications')->findOrFail($id);
 
-        return response()->json([
-            'usuario_id' => $usuario->id,
-            'favoritos'  => $usuario->favoritePublications
-        ]);
+        return response()->json($usuario->favoritePublications);
     }
+
 
     public function toggleFavorito(Request $request, $userId)
     {
@@ -217,12 +215,12 @@ class UserController extends Controller
         ]);
 
         $user = User::findOrFail($userId);
-        
+
         // Laravel maneja automáticamente si agregar o quitar
         $result = $user->favoritePublications()->toggle($request->publication_id);
-        
+
         $message = empty($result['attached']) ? 'Quitado de favoritos' : 'Agregado a favoritos';
-        
+
         return response()->json(['message' => $message]);
     }
 }
