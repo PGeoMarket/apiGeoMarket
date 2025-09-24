@@ -89,15 +89,8 @@ class UserController extends Controller
     // Mostrar un usuario específico
     public function show(User $user)
     {
-        $user->load(
-            'role',
-            'seller',
-            'comments',
-            'complaints',
-            'favoritePublications',
-            'image',
-            'coordinate'
-        );
+        $user = User::included()->findOrFail($user->id);
+
 
         return response()->json(['user' => $user]);
     }
