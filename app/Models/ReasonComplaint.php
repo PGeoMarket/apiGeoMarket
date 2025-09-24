@@ -23,7 +23,8 @@ class ReasonComplaint extends Model
         'id',
         'motivo',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'applies_to'
     ];
 
     // Campos por los que se puede ordenar
@@ -31,16 +32,17 @@ class ReasonComplaint extends Model
         'id',
         'motivo',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'applies_to'
     ];
     protected $fillable = [
         'motivo'
     ];
 
     // Relaciones
-    public function complaints()
+    public function reports()
     {
-        return $this->hasMany(Complaint::class, 'reason_id');
+        return $this->hasMany(report::class);
     }
 
     // Scope: included

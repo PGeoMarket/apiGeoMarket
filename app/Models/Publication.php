@@ -31,8 +31,8 @@ protected $allowIncluded = [
     'comments',
     'comments.user',
     'comments.user.role',
-    'complaints',
-    'complaints.user',
+    'reports',
+    'reports.user',
     'complaints.reasoncomplaint',
     'image',
     'usersWhoFavorited',
@@ -87,9 +87,9 @@ protected $allowSort = [
         return $this->belongsToMany(User::class);
     }
 
-    public function complaints()
+    public function reports()
     {
-        return $this->hasMany(Complaint::class);
+        return $this->morphMany(Report::class, 'reportable');
     }
     
     public function image()

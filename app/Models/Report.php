@@ -2,76 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class Complaint extends Model
+class Report extends Model
 {
-        use HasFactory;
-
-        protected $fillable = [
-        'Estado',
-        'descripcion_adicional',
-        'user_id',
-        'publication_id',
-        'reason_id',
+    protected $fillable = [
+        'user_id', 'reportable_id', 'reportable_type', 
+        'reason_id', 'descripcion_adicional', 'estado'
     ];
-    // si tu columna en la migración es "Estado" (mayúscula), lo dejamos así
 
-    protected $allowIncluded = [
-    'user',
-    'user.role',
-    'user.seller',
-    'publication',
-    'publication.seller',
-    'publication.seller.user',
-    'publication.category',
-    'publication.image',
-    'reasonComplaint'
-];
-
-// Campos por los que se puede filtrar
-protected $allowFilter = [
-    'id',
-    'estado',
-    'descripcion_adicional',
-    'user_id',
-    'publication_id',
-    'reason_id',
-    'created_at',
-    'updated_at'
-];
-
-// Campos por los que se puede ordenar
-protected $allowSort = [
-    'id',
-    'estado',
-    'user_id',
-    'publication_id',
-    'reason_id',
-    'created_at',
-    'updated_at'
-];
-
-
-    // Relaciones
-    public function user()
+    // Relación polimórfica
+    public function reportable()
     {
-        return $this->belongsTo(User::class);
+        return $this->morphTo();
     }
 
-    public function publication()
+    // Quien reporta
+    public function reporter()
     {
-        return $this->belongsTo(Publication::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    // relación 'reason' para que el controlador pueda usar load('reason')
-    public function reasonComplaint()
+    // Razón del reporte
+    public function reason()
     {
         return $this->belongsTo(ReasonComplaint::class, 'reason_id');
     }
- //Scopes
+
     public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
@@ -136,11 +94,13 @@ protected $allowSort = [
             }
         }
     }
-
+    //
     public function scopeGetOrPaginate(Builder $query)
     {
+
         if (request('perPage')) {
             $perPage = intval(request('perPage'));
+
             if ($perPage) {
                 return $query->paginate($perPage);
             }
@@ -148,6 +108,5 @@ protected $allowSort = [
 
         return $query->get();
     }
+    
 }
-
-

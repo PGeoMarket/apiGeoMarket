@@ -20,7 +20,7 @@ class User extends Model
         'seller.coordinate',
         'seller.image',
         'comments',
-        'complaints',
+        'reports',
         'favoritePublications',
         'favoritePublications.category',
         'favoritePublications.seller',
@@ -85,9 +85,9 @@ class User extends Model
         return $this->belongsToMany(Publication::class);
     }
 
-    public function complaints()
+    public function reports()
     {
-        return $this->hasMany(Complaint::class);
+        return $this->morphMany(Report::class, 'reportable');
     }
 
     public function seller()
