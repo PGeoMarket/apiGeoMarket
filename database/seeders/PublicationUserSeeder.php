@@ -17,12 +17,12 @@ class PublicationUserSeeder extends Seeder
             return;
         }
 
-        // 40% de usuarios tienen publicaciones favoritas
-        $usersWithFavorites = $users->random(intval($users->count() * 0.4));
+        // 80% de usuarios tienen publicaciones favoritas
+        $usersWithFavorites = $users->random(intval($users->count() * 0.8));
         
         foreach ($usersWithFavorites as $user) {
             // Cada usuario marca entre 1-12 publicaciones como favoritas
-            $favoriteCount = rand(1, 12);
+            $favoriteCount = rand(1, 15);
             $randomPublications = $publications->random($favoriteCount);
             
             // Usar syncWithoutDetaching para evitar duplicados

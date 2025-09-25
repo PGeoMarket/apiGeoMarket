@@ -15,7 +15,7 @@ class SellerFactory extends Factory
                 'Store', 'Shop', 'Market', 'Tienda', 'Plaza', 'Centro'
             ]),
             'descripcion' => $this->faker->optional(0.7)->paragraph(3),
-            'activo' => $this->faker->boolean(90),
+            'activo' => $this->faker->boolean(97),
             // user_id se asignará en el seeder
         ];
     }
