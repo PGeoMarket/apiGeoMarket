@@ -72,13 +72,7 @@ class SellerController extends Controller
     // Mostrar un vendedor
     public function show(Seller $seller)
     {
-        $seller->load([
-            'user',
-            'phones',
-            'publications',
-            'image',
-            'coordinate'
-        ]);
+        $seller = Seller::included()->findOrFail($seller->id);
 
         return response()->json([
             'seller' => $seller
