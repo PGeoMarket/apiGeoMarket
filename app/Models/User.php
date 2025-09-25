@@ -5,53 +5,56 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Model
 {
-    use HasFactory;
+    use HasFactory,HasApiTokens;
 
     // Relaciones que se pueden incluir
-protected $allowIncluded = [
-    'role',
-    'seller',
-    'seller.phones',
-    'seller.publications',
-    'seller.coordinate',
-    'seller.image',
-    'comments',
-    'complaints',
-    'favoritePublications',
-    'favoritePublications.category',
-    'favoritePublications.seller',
-    'favoritePublications.image'
-];
+    protected $allowIncluded = [
+        'role',
+        'seller',
+        'seller.phones',
+        'seller.publications.image',
+        'seller.coordinate',
+        'seller.image',
+        'comments',
+        'complaints',
+        'favoritePublications',
+        'favoritePublications.category',
+        'favoritePublications.seller',
+        'favoritePublications.image',
+        'support',
+        'image'
+    ];
 
-// Campos por los que se puede filtrar
-protected $allowFilter = [
-    'id',
-    'primer_nombre',
-    'segundo_nombre',
-    'primer_apellido',
-    'segundo_apellido',
-    'email',
-    'role_id',
-    'activo',
-    'created_at',
-    'updated_at'
-];
+    // Campos por los que se puede filtrar
+    protected $allowFilter = [
+        'id',
+        'primer_nombre',
+        'segundo_nombre',
+        'primer_apellido',
+        'segundo_apellido',
+        'email',
+        'role_id',
+        'activo',
+        'created_at',
+        'updated_at'
+    ];
 
-// Campos por los que se puede ordenar
-protected $allowSort = [
-    'id',
-    'primer_nombre',
-    'primer_apellido',
-    'email',
-    'role_id',
-    'activo',
-    'created_at',
-    'updated_at'
-];
-protected $fillable = [
+    // Campos por los que se puede ordenar
+    protected $allowSort = [
+        'id',
+        'primer_nombre',
+        'primer_apellido',
+        'email',
+        'role_id',
+        'activo',
+        'created_at',
+        'updated_at'
+    ];
+    protected $fillable = [
         'primer_nombre',
         'segundo_nombre',
         'primer_apellido',
@@ -62,6 +65,15 @@ protected $fillable = [
         'activo'
     ];
 
+    protected $hidden = [
+        'password_hash',
+        'remember_token',
+    ];
+
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
 
     public function role()
     {
@@ -96,6 +108,11 @@ protected $fillable = [
     public function coordinate()
     {
         return $this->morphOne(Coordinate::class, 'coordinateable');
+    }
+
+    public function supports()
+    {
+        return $this->hasMany(Support::class);
     }
 
     public function scopeIncluded(Builder $query)
@@ -162,7 +179,7 @@ protected $fillable = [
             }
         }
     }
-//
+    //
     public function scopeGetOrPaginate(Builder $query)
     {
 
@@ -177,4 +194,3 @@ protected $fillable = [
         return $query->get();
     }
 }
-

@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChatSupportController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\ORMController;
@@ -15,7 +17,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
-
+use App\Http\Controllers\SupportController;
 
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('comments', CommentController::class);
@@ -36,3 +38,11 @@ Route::patch('users/{userId}/favorites/toggle', [UserController::class, 'toggleF
 
 Route::get('orm/test-all', [ORMController::class, 'testAllRelations']);
 Route::get('orm/test-polymorphic', [ORMController::class, 'testPolymorphicRelations']);
+
+
+Route::post('/support', [SupportController::class, 'store']);
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/me', [AuthController::class, 'me']);

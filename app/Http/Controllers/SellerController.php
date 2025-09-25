@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Seller;
 use Illuminate\Http\Request;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary; 
 use Illuminate\Support\Facades\Hash;
 
 class SellerController extends Controller
@@ -16,7 +17,7 @@ class SellerController extends Controller
     }
 
     // Crear vendedor
- public function store(Request $request)
+    public function store(Request $request)
     {
         $data = $request->validate([
             'user_id'       => 'required|exists:users,id',
@@ -25,7 +26,7 @@ class SellerController extends Controller
             'activo'        => 'boolean',
 
             // extras
-            'foto'          => 'nullable|string|url',
+            'imagen'      => 'nullable|image|max:10240', // archivo imagen, 10MB máx
             'latitud'       => 'nullable|numeric',
             'longitud'      => 'nullable|numeric',
             'direccion'     => 'nullable|string',
@@ -40,9 +41,17 @@ class SellerController extends Controller
             ], 400);
         }
 
-        // Asociar imagen si viene
-        if (!empty($data['foto'])) {
-            $seller->image()->create(['url' => $data['foto']]);
+        // Subir imagen a Cloudinary si viene
+        if ($request->hasFile('imagen')) {
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('imagen')->getRealPath(),
+                ['folder' => 'sellers'] // carpeta específica para sellers
+            );
+
+            $seller->image()->create([
+                'url'       => $upload['secure_url'],
+                'public_id' => $upload['public_id'],
+            ]);
         }
 
         // Asociar coordenada si viene
@@ -85,7 +94,7 @@ class SellerController extends Controller
             'activo'        => 'boolean',
 
             // extras
-            'foto'          => 'nullable|string|url',
+            'imagen'      => 'nullable|image|max:10240', // archivo imagen, 10MB máx
             'latitud'       => 'nullable|numeric',
             'longitud'      => 'nullable|numeric',
             'direccion'     => 'nullable|string',
@@ -93,13 +102,24 @@ class SellerController extends Controller
 
         $seller->update($data);
 
-        // Actualizar/crear imagen
-        if (!empty($data['foto'])) {
-            if ($seller->image) {
-                $seller->image->update(['url' => $data['foto']]);
-            } else {
-                $seller->image()->create(['url' => $data['foto']]);
+        // Si viene nueva imagen, reemplazar en Cloudinary
+        if ($request->hasFile('imagen')) {
+            // 1. Eliminar la anterior de Cloudinary si existe
+            if ($seller->image && $seller->image->public_id) {
+                cloudinary()->uploadApi()->destroy($seller->image->public_id);
+                $seller->image->delete();
             }
+
+            // 2. Subir la nueva imagen
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('imagen')->getRealPath(),
+                ['folder' => 'sellers']
+            );
+
+            $seller->image()->create([
+                'url'       => $upload['secure_url'],
+                'public_id' => $upload['public_id'],
+            ]);
         }
 
         // Actualizar/crear coordenada
@@ -128,12 +148,18 @@ class SellerController extends Controller
     // Eliminar vendedor
     public function destroy($id)
     {
-        $seller = Seller::find($id);
+        $seller = Seller::with('image')->find($id);
 
         if (!$seller) {
             return response()->json([
                 'error' => 'Seller no encontrado.'
             ], 404);
+        }
+
+        // Eliminar imagen de Cloudinary si existe
+        if ($seller->image && $seller->image->public_id) {
+            cloudinary()->uploadApi()->destroy($seller->image->public_id);
+            $seller->image->delete();
         }
 
         if ($seller->delete()) {

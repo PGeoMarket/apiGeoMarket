@@ -16,7 +16,8 @@ class Publication extends Model
         'descripcion',
         'visibilidad',
         'seller_id',
-        'category_id'
+        'category_id',
+        'puntuacion_promedio'
     ];
   // Relaciones que se pueden incluir
 protected $allowIncluded = [
@@ -48,7 +49,8 @@ protected $allowFilter = [
     'seller_id',
     'category_id',
     'created_at',
-    'updated_at'
+    'updated_at',
+    'puntuacion_promedio'
 ];
 
 // Campos por los que se puede ordenar
@@ -60,7 +62,8 @@ protected $allowSort = [
     'seller_id',
     'category_id',
     'created_at',
-    'updated_at'
+    'updated_at',
+    'puntuacion_promedio'
 ];
 
     //Relaciones
