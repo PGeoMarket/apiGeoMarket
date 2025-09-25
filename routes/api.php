@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ChatSupportController;
 use App\Http\Controllers\CommentController;
-use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\ORMController;
 use App\Http\Controllers\PhoneController;
 use App\Http\Controllers\PublicationController;
@@ -17,11 +15,11 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupportController;
 
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('comments', CommentController::class);
-Route::apiResource('complaints', ComplaintController::class);
 Route::apiResource('phones', PhoneController::class);
 Route::apiResource('publications', PublicationController::class);
 Route::apiResource('reasonComplaints', ReasonComplaintController::class);
@@ -46,3 +44,6 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/me', [AuthController::class, 'me']);
+
+Route::post('publications/{publication}/report', [ReportController::class, 'reportPublication']);
+Route::post('users/{user}/report', [ReportController::class, 'reportUser']);

@@ -33,7 +33,7 @@ protected $allowIncluded = [
     'comments.user.role',
     'reports',
     'reports.user',
-    'complaints.reasoncomplaint',
+    'reports.reason',
     'image',
     'usersWhoFavorited',
     'usersWhoFavorited.role'

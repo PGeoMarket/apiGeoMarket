@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             
             // Comentarios y quejas (dependen de users y publications)
             CommentSeeder::class,
-            ComplaintSeeder::class,
+            ReportSeeder::class,
             
             // Tabla pivote al final
             PublicationUserSeeder::class,

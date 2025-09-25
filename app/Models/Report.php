@@ -12,6 +12,36 @@ class Report extends Model
         'reason_id', 'descripcion_adicional', 'estado'
     ];
 
+    protected $allowIncluded = [
+        'reporter',
+        'reporter.role',
+        'reporter.image',
+        'reason'
+    ];
+
+    protected $allowFilter = [
+        'id',
+        'user_id',
+        'reportable_type',
+        'reportable_id',
+        'reason_id',
+        'estado',
+        'created_at',
+        'updated_at'
+    ];
+
+    protected $allowSort = [
+        'id',
+        'user_id',
+        'reportable_type',
+        'reportable_id',
+        'reason_id',
+        'estado',
+        'created_at',
+        'updated_at'
+    ];
+
+
     // Relación polimórfica
     public function reportable()
     {

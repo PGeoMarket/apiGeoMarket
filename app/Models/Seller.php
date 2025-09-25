@@ -19,7 +19,7 @@ protected $allowIncluded = [
     'publications.category',
     'publications.comments',
     'publications.comments.user',
-    'publications.complaints',
+    'publications.reports',
     'publications.image',
     'publications.coordinate',
     'publications.usersWhoFavorited',

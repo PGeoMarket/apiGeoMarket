@@ -21,7 +21,7 @@ class ReportController extends Controller
         $data = $request->validate([
             'reportable_type' => 'required|in:publication,user',
             'reportable_id'   => 'required|integer',
-            'reason_id'       => 'required|exists:reasons_complaint,id',
+            'reason_id'       => 'required|exists:reason_complaints,id',
             'descripcion_adicional' => 'nullable|string|max:1000',
             'user_id'         => 'required|exists:users,id',
         ]);
@@ -67,7 +67,7 @@ class ReportController extends Controller
 
     public function show(Report $report)
     {
-        $report->load(['reporter', 'reason', 'reportable']);
+        $report->load(['reason', 'reportable']);
         return response()->json($report);
     }
 
@@ -111,7 +111,7 @@ class ReportController extends Controller
    public function reportPublication(Request $request, Publication $publication)
     {
         $data = $request->validate([
-            'reason_id' => 'required|exists:reasons_complaint,id',
+            'reason_id' => 'required|exists:reason_complaints,id',
             'descripcion_adicional' => 'nullable|string|max:1000',
             'user_id'   => 'nullable|exists:users,id',
         ]);
@@ -144,7 +144,7 @@ class ReportController extends Controller
    public function reportUser(Request $request, User $user)
     {
         $data = $request->validate([
-            'reason_id' => 'required|exists:reasons_complaint,id',
+            'reason_id' => 'required|exists:reason_complaints,id',
             'descripcion_adicional' => 'nullable|string|max:1000',
             'user_id'   => 'nullable|exists:users,id',
         ]);

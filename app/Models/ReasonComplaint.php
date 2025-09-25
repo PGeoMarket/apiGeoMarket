@@ -12,10 +12,9 @@ class ReasonComplaint extends Model
     use HasFactory;
     
     protected $allowIncluded = [
-        'complaints',
-        'complaints.user',
-        'complaints.publication',
-        'complaints.publication.seller'
+        'reports',
+        'reports.reporter',
+        'reports.reportable'
     ];
 
     // Campos por los que se puede filtrar
@@ -36,13 +35,23 @@ class ReasonComplaint extends Model
         'applies_to'
     ];
     protected $fillable = [
-        'motivo'
+        'motivo',
+        'applies_to'
     ];
 
     // Relaciones
     public function reports()
     {
-        return $this->hasMany(report::class);
+        return $this->hasMany(Report::class, 'reason_id');
+    }
+
+    /**
+     * ✅ MÉTODO FALTANTE - CRÍTICO PARA EL FUNCIONAMIENTO
+     * Verifica si esta razón aplica para el tipo de contenido dado
+     */
+    public function appliesTo(string $type): bool
+    {
+        return $this->applies_to === 'both' || $this->applies_to === $type;
     }
 
     // Scope: included

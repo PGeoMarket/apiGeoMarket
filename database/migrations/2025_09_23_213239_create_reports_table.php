@@ -16,14 +16,14 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('reportable_id');
             $table->string('reportable_type', 50);
-            $table->unsignedSmallInteger('reason_id');
+            $table->unsignedBigInteger('reason_id');
             $table->text('descripcion_adicional')->nullable();
             $table->boolean('estado')->default(false);
             $table->timestamps();
 
             // Foreign keys
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('reason_id')->references('id')->on('reasons_complaint')->onDelete('restrict');
+            $table->foreign('reason_id')->references('id')->on('reason_complaints')->onDelete('restrict');
 
         });
     }
