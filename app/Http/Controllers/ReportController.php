@@ -129,7 +129,7 @@ class ReportController extends Controller
 
         $report = Report::create([
             'user_id'            => $userId,
-            'reportable_type'    => 'publication',
+            'reportable_type'    => Publication::class,
             'reportable_id'      => $publication->id,
             'reason_id'          => $data['reason_id'],
             'descripcion_adicional' => $data['descripcion_adicional'] ?? null
@@ -162,7 +162,7 @@ class ReportController extends Controller
 
         $report = Report::create([
             'user_id'            => $userId,
-            'reportable_type'    => 'user',
+            'reportable_type'    => User::class,
             'reportable_id'      => $user->id,
             'reason_id'          => $data['reason_id'],
             'descripcion_adicional' => $data['descripcion_adicional'] ?? null

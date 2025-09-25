@@ -10,7 +10,7 @@ class ReasonComplaint extends Model
 {
 
     use HasFactory;
-    
+
     protected $allowIncluded = [
         'reports',
         'reports.reporter',
@@ -132,5 +132,13 @@ class ReasonComplaint extends Model
         }
 
         return $query->get();
+    }
+
+    public function scopeForType(Builder $query, string $type)
+    {
+        return $query->where(function ($q) use ($type) {
+            $q->where('applies_to', $type)
+                ->orWhere('applies_to', 'both');
+        });
     }
 }

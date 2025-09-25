@@ -44,7 +44,7 @@ class ReportSeeder extends Seeder
                 if (!$existingReport) {
                     Report::create([
                         'user_id' => $reporter->id,
-                        'reportable_type' => 'publication',
+                        'reportable_type' => Publication::class,
                         'reportable_id' => $publication->id,
                         'reason_id' => $reason->id,
                         'descripcion_adicional' => fake()->optional(0.6)->paragraph(),
@@ -75,7 +75,7 @@ class ReportSeeder extends Seeder
                 if (!$existingReport) {
                     Report::create([
                         'user_id' => $reporter->id,
-                        'reportable_type' => 'user',
+                        'reportable_type' => User::class,
                         'reportable_id' => $userToReport->id,
                         'reason_id' => $reason->id,
                         'descripcion_adicional' => fake()->optional(0.7)->paragraph(),

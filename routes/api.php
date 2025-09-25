@@ -25,6 +25,8 @@ Route::apiResource('publications', PublicationController::class);
 Route::apiResource('reasonComplaints', ReasonComplaintController::class);
 Route::apiResource('roles', RoleController::class);
 Route::apiResource('sellers', SellerController::class);
+Route::apiResource('reports', ReportController::class);
+
 
 Route::apiResource('images', ImageController::class);
 
