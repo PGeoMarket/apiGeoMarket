@@ -44,7 +44,26 @@ class ImageFactory extends Factory
         'https://i.pinimg.com/1200x/9c/07/b6/9c07b63c1d44a22104c19807a8a3a703.jpg',
         'https://i.pinimg.com/736x/20/6e/32/206e32e96dd918b67ee68ab8118612a4.jpg',
         'https://i.pinimg.com/736x/dc/27/ea/dc27eabcff23052000e9c99b14d02e10.jpg',
-        'https://i.pinimg.com/1200x/c5/1d/ba/c51dba91460eb2e145bbf0e29bee8f42.jpg'
+        'https://i.pinimg.com/1200x/c5/1d/ba/c51dba91460eb2e145bbf0e29bee8f42.jpg',
+        'https://images7.memedroid.com/images/UPLOADED555/62c1103df10b7.jpeg',
+        'https://media.cnn.com/api/v1/images/stellar/prod/cnne-212344-monkey-selfie.jpeg?c=16x9&q=h_833,w_1480,c_fill',
+        'https://i.pinimg.com/736x/94/e1/14/94e1143ce4e6b89aa40b794d2599ad6b.jpg',
+        'https://i.pinimg.com/736x/b0/a5/92/b0a592ef43007393f5f312559e7ae32f.jpg',
+        'https://i.pinimg.com/736x/1a/76/7c/1a767c4572d016ba1c8f6d6363be5e23.jpg',
+        'https://i.pinimg.com/736x/28/8a/74/288a74ca157de712c14b0ed6ad22e56b.jpg',
+        'https://i.pinimg.com/736x/fd/26/5c/fd265ccd108181a75a5969c65c3e37a6.jpg',
+        'https://i.pinimg.com/736x/b8/fa/22/b8fa222be2d0a0fb0bcdefc2d639548b.jpg',
+        'https://i.pinimg.com/1200x/67/3e/d3/673ed36ec9fa28e0ba66543c4232e2e0.jpg',
+        'https://i.pinimg.com/736x/e2/e7/d5/e2e7d509659e4b08ac8d4cb2a139df19.jpg',
+        'https://i.pinimg.com/1200x/da/13/2a/da132a6af1b306745ab76e039cd6066d.jpg',
+        'https://i.pinimg.com/736x/e9/17/2d/e9172d2c98648ba7af43aa6033454199.jpg',
+        'https://i.pinimg.com/1200x/f6/a5/af/f6a5afee03f180a10ae2f63f99d112fd.jpg',
+        'https://i.pinimg.com/736x/93/96/e2/9396e2cdf662eecabcc3183b6d18e631.jpg',
+        'https://i.pinimg.com/736x/4e/f2/d2/4ef2d2985d6180f767f6a25328676032.jpg',
+        'https://i.pinimg.com/736x/2a/10/00/2a1000444a2f43366b2b014ffd323757.jpg',
+        'https://i.pinimg.com/736x/5e/6c/58/5e6c58274643c24034191b0112d8a2ec.jpg'
+
+
         
     ];
     
