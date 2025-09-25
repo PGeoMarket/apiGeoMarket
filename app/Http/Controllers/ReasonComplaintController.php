@@ -24,6 +24,7 @@ class ReasonComplaintController extends Controller
     {
         $data = $request->validate([
             'motivo' => 'required|string|max:255',
+            'applies_to' => 'required|in:publication,user,both' 
         ]);
 
         $reason_complaint = ReasonComplaint::create($data);
@@ -74,7 +75,8 @@ class ReasonComplaintController extends Controller
         } 
 
         $data = $request->validate([
-            'motivo'      => 'required|string|max:255'
+            'motivo'      => 'required|string|max:255',
+            'applies_to' => 'required|in:publication,user,both'
         ]);
 
         $reason_complaint->update($data);

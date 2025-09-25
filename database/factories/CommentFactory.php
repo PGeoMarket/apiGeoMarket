@@ -14,7 +14,7 @@ class CommentFactory extends Factory
     {
         return [
             'texto' => $this->faker->paragraph(2),
-            'valor_estrella' => $this->faker->optional(0.8)->numberBetween(1, 5),
+            'valor_estrella' => $this->faker->numberBetween(1, 5),
             // No asignamos FK aquí, se harán en el seeder para mejor control
         ];
     }
