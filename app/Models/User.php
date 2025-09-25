@@ -16,7 +16,7 @@ class User extends Model
         'role',
         'seller',
         'seller.phones',
-        'seller.publications',
+        'seller.publications.image',
         'seller.coordinate',
         'seller.image',
         'comments',
