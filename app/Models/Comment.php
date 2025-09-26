@@ -18,6 +18,7 @@ class Comment extends Model
     ];
     protected $allowIncluded = [
         'user',
+        'user.image',
         'user.role',
         'user.seller',
         'publication',
