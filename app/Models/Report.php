@@ -17,7 +17,9 @@ class Report extends Model
         'reporter.role',
         'reporter.image',
         'reason',
-        'reportable'
+        'reportable',
+        'reportable.image'
+
     ];
 
     protected $allowFilter = [
