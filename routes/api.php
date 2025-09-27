@@ -45,7 +45,9 @@ Route::post('/support', [SupportController::class, 'store']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/me', [AuthController::class, 'me']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+});
 
 Route::post('publications/{publication}/report', [ReportController::class, 'reportPublication']);
 Route::post('users/{user}/report', [ReportController::class, 'reportUser']);
