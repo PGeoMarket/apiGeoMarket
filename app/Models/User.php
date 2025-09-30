@@ -115,6 +115,14 @@ class User extends Model
         return $this->hasMany(Support::class);
     }
 
+    public function messages(){
+        return $this->hasMany(Message::class);
+    }
+
+    public function chats()  {
+        return $this->hasMany(Chat::class);
+    }
+
     public function scopeIncluded(Builder $query)
     {
         if (empty($this->allowIncluded) || empty(request("included"))) {
