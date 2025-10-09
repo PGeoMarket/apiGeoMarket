@@ -46,19 +46,20 @@ Route::post('/support', [SupportController::class, 'store']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/me', [AuthController::class, 'me']);
-});
+
 
 Route::post('publications/{publication}/report', [ReportController::class, 'reportPublication']);
 Route::post('users/{user}/report', [ReportController::class, 'reportUser']);
 
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+
     // Crear chat desde publicación
     Route::post('chats/from-publication', [ChatController::class, 'createFromPublication']);
     
     // Obtener mis chats
-    Route::get('/', [ChatController::class, 'getMyChats']);
+    Route::get('chats', [ChatController::class, 'getMyChats']);
     
     // Obtener mensajes de un chat
     Route::get('chats/{chatId}/messages', [ChatController::class, 'getChatMessages']);
@@ -68,3 +69,4 @@ Route::post('users/{user}/report', [ReportController::class, 'reportUser']);
     
     // Cerrar chat
     Route::patch('chats/{chatId}/close', [ChatController::class, 'closeChat']);
+});

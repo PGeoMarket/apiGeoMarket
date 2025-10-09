@@ -37,9 +37,16 @@ class Chat extends Model
     }
 
     public function latestMessage()
-    {
-        return $this->hasOne(Message::class)->latestOfMany('sent_at');
-    }
+{
+    return $this->hasOne(Message::class, 'chat_id', 'id')
+        ->select([
+            'messages.id',
+            'messages.chat_id',
+            'messages.text as content',
+            'messages.sent_at'
+        ])
+        ->latest('messages.sent_at');
+}
 
     // Auto-generar canal único para Ably
     protected static function boot()

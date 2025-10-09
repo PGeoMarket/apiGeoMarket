@@ -25,7 +25,7 @@ class ChatController extends Controller
             // Obtener la publicación con el seller y user
             $publication = Publication::with('seller')->findOrFail($request->publication_id);
             
-            $initiatorUserId = 1;
+            $initiatorUserId = Auth::id();
             $responderUserId = $publication->seller->user_id; // user_id del seller
 
             // Validar que no se contacte a sí mismo
@@ -62,41 +62,59 @@ class ChatController extends Controller
      * Obtener mis chats
      */
     public function getMyChats()
-    {
-        try {
-            $userId = 1;
-            
-            $chats = Chat::forUser($userId)
-                ->active()
-                ->with([
-                    'initiator:id,primer_nombre,primer_apellido',
-                    'responder:id,primer_nombre,primer_apellido',
-                    'publication:id,titulo',
-                    'latestMessage:id,chat_id,content,sent_at'
-                ])
-                ->orderByDesc('updated_at')
-                ->get();
+{
+    try {
+        $userId = Auth::id();
+        
+        $chats = Chat::forUser($userId)
+            ->active()
+            ->with([
+                'initiator' => function ($query) {
+                    $query->select('id', 'primer_nombre', 'primer_apellido')
+                          ->with(['image:id,imageable_id,imageable_type,url']);
+                },
+                'responder' => function ($query) {
+                    $query->select('id', 'primer_nombre', 'primer_apellido')
+                          ->with(['image:id,imageable_id,imageable_type,url']);
+                },
+                'publication' => function ($query) {
+                    $query->select('id', 'titulo')
+                          ->with(['image:id,imageable_id,imageable_type,url']);
+                },
+                'latestMessage:id,chat_id,text,sent_at'
+            ])
+            ->orderByDesc('updated_at')
+            ->get();
 
-            // Agregar información del otro participante para cada chat
-            $chats = $chats->map(function ($chat) use ($userId) {
-                $otherParticipant = $chat->getOtherParticipant($userId);
-                $chat->other_participant = $otherParticipant;
-                $chat->other_participant_name = $otherParticipant->primer_nombre . ' ' . $otherParticipant->primer_apellido;
-                return $chat;
-            });
+        // Agregar información del otro participante e imágenes
+        $chats = $chats->map(function ($chat) use ($userId) {
+            $otherParticipant = $chat->getOtherParticipant($userId);
 
-            return response()->json([
-                'success' => true,
-                'chats' => $chats
-            ]);
+            $chat->other_participant = $otherParticipant;
+            $chat->other_participant_name = $otherParticipant->primer_nombre . ' ' . $otherParticipant->primer_apellido;
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al obtener los chats: ' . $e->getMessage()
-            ], 500);
-        }
+            // 🔹 Imagen del otro participante
+            $chat->other_participant_image_url = $otherParticipant->image?->url ?? null;
+
+            // 🔹 Imagen de la publicación
+            $chat->publication_image_url = $chat->publication?->image?->url ?? null;
+
+            return $chat;
+        });
+
+        return response()->json([
+            'success' => true,
+            'chats' => $chats
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener los chats: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
     /**
      * Obtener mensajes de un chat
@@ -139,12 +157,12 @@ class ChatController extends Controller
     public function sendMessage(Request $request, $chatId)
     {
         $request->validate([
-            'content' => 'required|string|max:1000'
+            'text' => 'required|string|max:1000'
         ]);
 
         try {
             $chat = Chat::findOrFail($chatId);
-            $userId = 1;
+            $userId = Auth::id();
 
             // Verificar acceso
             if (!$chat->isParticipant($userId)) {
