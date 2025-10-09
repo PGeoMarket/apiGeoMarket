@@ -13,8 +13,8 @@ class CoordinateSeeder extends Seeder
         $users = User::all();
         $sellers = Seller::all();
 
-        // 80% de usuarios tienen coordenadas
-        $usersWithCoords = $users->random(intval($users->count() * 0.8));
+        // 95% de usuarios tienen coordenadas
+        $usersWithCoords = $users->random(intval($users->count() * 0.95));
         foreach ($usersWithCoords as $user) {
             Coordinate::factory()->create([
                 'coordinateable_type' => User::class,
@@ -22,8 +22,8 @@ class CoordinateSeeder extends Seeder
             ]);
         }
 
-        // 90% de sellers tienen coordenadas
-        $sellersWithCoords = $sellers->random(intval($sellers->count() * 0.9));
+        // 95% de sellers tienen coordenadas
+        $sellersWithCoords = $sellers->random(intval($sellers->count() * 0.95));
         foreach ($sellersWithCoords as $seller) {
             Coordinate::factory()->create([
                 'coordinateable_type' => Seller::class,

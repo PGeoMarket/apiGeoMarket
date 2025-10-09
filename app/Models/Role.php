@@ -15,7 +15,7 @@ class Role extends Model
         'users',
         'users.seller',
         'users.comments',
-        'users.complaints'
+        'users.reports'
     ];
 
     // Campos por los que se puede filtrar

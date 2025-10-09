@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Seller;
 use Illuminate\Http\Request;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary; 
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Hash;
 
 class SellerController extends Controller
@@ -72,17 +72,9 @@ class SellerController extends Controller
     // Mostrar un vendedor
     public function show(Seller $seller)
     {
-        $seller->load([
-            'user',
-            'phones',
-            'publications',
-            'image',
-            'coordinate'
-        ]);
+        $seller = Seller::included()->findOrFail($seller->id);
 
-        return response()->json([
-            'seller' => $seller
-        ]);
+        return response()->json($seller);
     }
 
     // Actualizar vendedor

@@ -10,12 +10,11 @@ class ReasonComplaint extends Model
 {
 
     use HasFactory;
-    
+
     protected $allowIncluded = [
-        'complaints',
-        'complaints.user',
-        'complaints.publication',
-        'complaints.publication.seller'
+        'reports',
+        'reports.reporter',
+        'reports.reportable'
     ];
 
     // Campos por los que se puede filtrar
@@ -23,7 +22,8 @@ class ReasonComplaint extends Model
         'id',
         'motivo',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'applies_to'
     ];
 
     // Campos por los que se puede ordenar
@@ -31,16 +31,27 @@ class ReasonComplaint extends Model
         'id',
         'motivo',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'applies_to'
     ];
     protected $fillable = [
-        'motivo'
+        'motivo',
+        'applies_to'
     ];
 
     // Relaciones
-    public function complaints()
+    public function reports()
     {
-        return $this->hasMany(Complaint::class, 'reason_id');
+        return $this->hasMany(Report::class, 'reason_id');
+    }
+
+    /**
+     * ✅ MÉTODO FALTANTE - CRÍTICO PARA EL FUNCIONAMIENTO
+     * Verifica si esta razón aplica para el tipo de contenido dado
+     */
+    public function appliesTo(string $type): bool
+    {
+        return $this->applies_to === 'both' || $this->applies_to === $type;
     }
 
     // Scope: included
@@ -121,5 +132,13 @@ class ReasonComplaint extends Model
         }
 
         return $query->get();
+    }
+
+    public function scopeForType(Builder $query, string $type)
+    {
+        return $query->where(function ($q) use ($type) {
+            $q->where('applies_to', $type)
+                ->orWhere('applies_to', 'both');
+        });
     }
 }

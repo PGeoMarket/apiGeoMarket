@@ -18,7 +18,7 @@ class UserFactory extends Factory
             'segundo_apellido' => $this->faker->optional(0.7)->lastName(),
             'email' => $this->faker->unique()->safeEmail(),
             'password_hash' => Hash::make('password'),
-            'activo' => $this->faker->boolean(90),
+            'activo' => $this->faker->boolean(97),
             // role_id se asignará en el seeder
         ];
     }
