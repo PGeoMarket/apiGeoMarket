@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ORMController;
 use App\Http\Controllers\PhoneController;
@@ -45,9 +46,27 @@ Route::post('/support', [SupportController::class, 'store']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/me', [AuthController::class, 'me']);
-});
+
 
 Route::post('publications/{publication}/report', [ReportController::class, 'reportPublication']);
 Route::post('users/{user}/report', [ReportController::class, 'reportUser']);
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+
+    // Crear chat desde publicación
+    Route::post('chats/from-publication', [ChatController::class, 'createFromPublication']);
+    
+    // Obtener mis chats
+    Route::get('chats', [ChatController::class, 'getMyChats']);
+    
+    // Obtener mensajes de un chat
+    Route::get('chats/{chatId}/messages', [ChatController::class, 'getChatMessages']);
+    
+    // Enviar mensaje
+    Route::post('chats/{chatId}/messages', [ChatController::class, 'sendMessage']);
+    
+    // Cerrar chat
+    Route::patch('chats/{chatId}/close', [ChatController::class, 'closeChat']);
+});

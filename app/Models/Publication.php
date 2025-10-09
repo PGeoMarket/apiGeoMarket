@@ -98,10 +98,10 @@ protected $allowSort = [
     }
 
 
-    /*      public function chats() {
+    public function chats() {
         return $this->hasMany(Chat::class);
     }
- */
+
     //Scopes
     public function scopeIncluded(Builder $query)
     {
