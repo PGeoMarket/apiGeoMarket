@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CoordinateController;
 use App\Http\Controllers\ORMController;
 use App\Http\Controllers\PhoneController;
 use App\Http\Controllers\PublicationController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupportController;
+use App\Models\Coordinate;
 
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('comments', CommentController::class);
@@ -27,6 +29,9 @@ Route::apiResource('reasonComplaints', ReasonComplaintController::class);
 Route::apiResource('roles', RoleController::class);
 Route::apiResource('sellers', SellerController::class);
 Route::apiResource('reports', ReportController::class);
+Route::apiResource('coordinates', CoordinateController::class);
+
+
 
 
 Route::apiResource('images', ImageController::class);
