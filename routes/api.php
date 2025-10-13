@@ -18,6 +18,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\CoordinateController;
 
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('comments', CommentController::class);
@@ -27,6 +28,8 @@ Route::apiResource('reasonComplaints', ReasonComplaintController::class);
 Route::apiResource('roles', RoleController::class);
 Route::apiResource('sellers', SellerController::class);
 Route::apiResource('reports', ReportController::class);
+Route::apiResource('coordinates', CoordinateController::class);
+
 
 
 Route::apiResource('images', ImageController::class);
@@ -51,6 +54,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('publications/{publication}/report', [ReportController::class, 'reportPublication']);
 Route::post('users/{user}/report', [ReportController::class, 'reportUser']);
 
+Route::post('/cordinates', [CoordinateController::class, 'store']);
+
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
@@ -69,4 +75,6 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Cerrar chat
     Route::patch('chats/{chatId}/close', [ChatController::class, 'closeChat']);
+
+    
 });
