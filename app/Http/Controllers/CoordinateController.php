@@ -8,7 +8,7 @@ use App\Models\Coordinate;
 class CoordinateController extends Controller
 {
     public function index()
-    {   
+    {
         $coordinates = Coordinate::included()->filter()->sort()->GetOrPaginate();
         return response()->json($coordinates);
     }
@@ -39,18 +39,24 @@ class CoordinateController extends Controller
 
     public function show(Coordinate $coordinate)
     {
-        //
+        return response()->json(data: $coordinate);
     }
 
     public function update(Request $request, Coordinate $coordinate)
     {
         $data = $request->validate([
-            'latitud'             => 'required|numeric',
-            'longitud'            => 'required|numeric',
-            'direccion'           => 'required|string',
-            'coordinateable_id'   => 'required|integer',
-            'coordinateable_type' => 'required|string',
+            'latitud'   => 'nullable|numeric',
+            'longitud'  => 'nullable|numeric',
+            'direccion' => 'nullable|string',
         ]);
+
+        $data = array_filter($data, fn($value) => !is_null($value));
+
+        if (empty($data)) {
+            return response()->json([
+                'message' => 'No se proporcionaron campos para actualizar.'
+            ], 400);
+        }
 
         $coordinate->update($data);
 
