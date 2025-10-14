@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Builder;
 
-class User extends Model
+
+class User extends Authenticatable
 {
     use HasFactory,HasApiTokens;
 
@@ -113,6 +115,14 @@ class User extends Model
     public function supports()
     {
         return $this->hasMany(Support::class);
+    }
+
+    public function messages(){
+        return $this->hasMany(Message::class);
+    }
+
+    public function chats()  {
+        return $this->hasMany(Chat::class);
     }
 
     public function scopeIncluded(Builder $query)
