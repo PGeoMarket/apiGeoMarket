@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Phone;
 use App\Models\Seller;
 use Illuminate\Http\Request;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
@@ -30,6 +31,8 @@ class SellerController extends Controller
             'latitud'       => 'nullable|numeric',
             'longitud'      => 'nullable|numeric',
             'direccion'     => 'nullable|string',
+            'telefonos'     => 'nullable|array', //lista de telefonos
+            'telefonos.*'   => 'required|numeric|digits_between:7,15', //reglas para cada item del array
         ]);
 
         // Crear el seller
@@ -39,6 +42,16 @@ class SellerController extends Controller
             return response()->json([
                 'message' => 'No se pudo crear el vendedor.'
             ], 400);
+        }
+
+        // Crear teléfonos si vienen
+        if (!empty($data['telefonos'])) {
+            foreach ($data['telefonos'] as $telefono) {
+                Phone::create([
+                    'numero_telefono' => $telefono,
+                    'seller_id'       => $seller->id,
+                ]);
+            }
         }
 
         // Subir imagen a Cloudinary si viene
@@ -90,9 +103,24 @@ class SellerController extends Controller
             'latitud'       => 'nullable|numeric',
             'longitud'      => 'nullable|numeric',
             'direccion'     => 'nullable|string',
+            'telefonos'     => 'nullable|array', 
+            'telefonos.*'   => 'required|numeric|digits_between:7,15',
         ]);
 
         $seller->update($data);
+
+        if (isset($data['telefonos'])) {
+            // Eliminar teléfonos anteriores
+            $seller->phones()->delete();
+            
+            // Crear los nuevos
+            foreach ($data['telefonos'] as $telefono) {
+                Phone::create([
+                    'numero_telefono' => $telefono,
+                    'seller_id'       => $seller->id,
+                ]);
+            }
+        }
 
         // Si viene nueva imagen, reemplazar en Cloudinary
         if ($request->hasFile('imagen')) {
