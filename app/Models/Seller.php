@@ -13,6 +13,7 @@ class Seller extends Model
  // Relaciones que se pueden incluir
 protected $allowIncluded = [
     'user',
+    'user.image',
     'user.role',
     'phones',
     'publications',
