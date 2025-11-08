@@ -9,6 +9,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CoordinateController;
+use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\ORMController;
 use App\Http\Controllers\PhoneController;
 use App\Http\Controllers\PublicationController;
@@ -74,4 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Cerrar chat
     Route::patch('chats/{chatId}/close', [ChatController::class, 'closeChat']);
+
+    Route::post('/device-token', [DeviceTokenController::class, 'store']);
+    Route::delete('/device-token', [DeviceTokenController::class, 'destroy']);
 });

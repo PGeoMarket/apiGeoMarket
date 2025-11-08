@@ -7,7 +7,7 @@ use App\Models\Message;
 use App\Models\Publication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Ably\AblyRest;
 
 class ChatController extends Controller
 {
@@ -180,12 +180,18 @@ class ChatController extends Controller
                 'message_type' => $request->message_type ?? 'text'
             ]);
 
+            // Cargar relación sender
+            $message->load('sender:id,primer_nombre,primer_apellido');
+
             // Actualizar timestamp del chat
             $chat->touch();
 
+            // 👇 NUEVO: Enviar push notification
+            $this->sendPushNotification($chat, $message);
+
             return response()->json([
                 'success' => true,
-                'message' => $message->load('sender:id,primer_nombre,primer_apellido')
+                'message' => $message
             ]);
 
         } catch (\Exception $e) {
@@ -226,4 +232,39 @@ class ChatController extends Controller
             ], 500);
         }
     }
+
+    private function sendPushNotification(Chat $chat, Message $message)
+    {
+        try {
+            $ably = new AblyRest(['key' => env('ABLY_API_KEY')]);
+            $channel = $ably->channels->get($chat->ably_channel_id);
+
+            // Determinar quién es el receptor
+            $recipientId = $message->sender_id === $chat->initiator_user_id 
+                ? $chat->responder_user_id 
+                : $chat->initiator_user_id;
+
+            // Nombre del remitente
+            $senderName = $message->sender->primer_nombre . ' ' . $message->sender->primer_apellido;
+
+            // Publicar mensaje con configuración de push
+            $channel->publish('new-message', $message->toArray(), [
+                'push' => [
+                    'notification' => [
+                        'title' => $senderName,
+                        'body' => $message->text,
+                    ],
+                    'data' => [
+                        'chat_id' => (string)$chat->id,
+                        'sender_id' => (string)$message->sender_id,
+                        'type' => 'chat_message'
+                    ]
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            // No lanzamos error para no interrumpir el envío del mensaje
+        }
+    }
+
 }
