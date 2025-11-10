@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Seller;
 use App\Models\Coordinate;
+use App\Models\Phone;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -36,6 +37,8 @@ class AuthController extends Controller
             $baseRules['latitud'] = 'nullable|numeric';
             $baseRules['longitud'] = 'nullable|numeric';
             $baseRules['direccion'] = 'nullable|string';
+            $baseRules['telefonos']     = 'nullable|array';
+            $baseRules['telefonos.*']   = 'required|numeric|digits_between:7,15';
         }
 
         $data = $request->validate($baseRules);
@@ -60,6 +63,15 @@ class AuthController extends Controller
                 'descripcion'    => $data['descripcion'] ?? null,
                 'activo'         => true,
             ]);
+
+            if (!empty($data['telefonos'])) {
+                foreach ($data['telefonos'] as $telefono) {
+                    Phone::create([
+                        'numero_telefono' => $telefono,
+                        'seller_id'       => $seller->id,
+                    ]);
+                }
+            }
 
             // 3. Crear coordenadas para el vendedor
             Coordinate::create([
@@ -103,11 +115,20 @@ class AuthController extends Controller
         }
 
         // Verificar que el usuario esté activo
-        if (!$user->activo) {
+        if ($user->isSuspended()) {
+        // Si está suspendido temporalmente
+        if ($user->suspended_until && $user->suspended_until > now()) {
+            $days_remaining = now()->diffInHours($user->suspended_until);
             throw ValidationException::withMessages([
-                'email' => ['La cuenta está inactiva.'],
+                'email' => ["Tu cuenta está suspendida temporalmente. Disponible en {$days_remaining} horas."],
             ]);
         }
+        
+        // Si está suspendido permanentemente
+        throw ValidationException::withMessages([
+            'email' => ['Tu cuenta está suspendida permanentemente.'],
+        ]);
+    }
 
         // Crear token de acceso
         $token = $user->createToken('auth-token')->plainTextToken;

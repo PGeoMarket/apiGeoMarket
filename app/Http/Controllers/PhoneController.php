@@ -50,7 +50,7 @@ class PhoneController extends Controller
     public function update(Request $request, Phone $phone)
 {
     $request->validate([
-        'numero_telefono' => 'required|integer', // ajusta min según tu formato
+        'numero_telefono' => 'required|numeric', // ajusta min según tu formato
         'seller_id'       => 'required|exists:sellers,id',
     ]);
 

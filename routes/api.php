@@ -33,8 +33,6 @@ Route::apiResource('reports', ReportController::class);
 Route::apiResource('coordinates', CoordinateController::class);
 
 
-
-
 Route::apiResource('images', ImageController::class);
 
 //rutas del usuario y favoritos
@@ -56,6 +54,10 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('publications/{publication}/report', [ReportController::class, 'reportPublication']);
 Route::post('users/{user}/report', [ReportController::class, 'reportUser']);
+
+Route::post('users/{user}/suspend/temporary', [UserController::class, 'suspendTemporarily']);
+Route::post('users/{user}/suspend/permanent', [UserController::class, 'suspendPermanently']);
+Route::post('users/{user}/unsuspend', [UserController::class, 'unsuspend']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
