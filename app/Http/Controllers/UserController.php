@@ -216,4 +216,48 @@ class UserController extends Controller
 
         return response()->json(['message' => $message]);
     }
+    /**
+     * Suspender usuario temporalmente
+     */
+    public function suspendTemporarily(Request $request, User $user)
+    {
+        $request->validate([
+            'days' => 'required|integer|min:1|max:365'
+        ]);
+
+        $user->suspendTemporarily($request->days);
+
+        return response()->json([
+            'message' => "Usuario suspendido temporalmente por {$request->days} días.",
+            'suspended_until' => $user->suspended_until,
+            'active' => $user->activo // Debería ser false
+        ]);
+    }
+
+
+    /**
+     * Suspender usuario definitivamente
+     */
+    public function suspendPermanently(User $user)
+    {
+        $user->suspendPermanently();
+
+        return response()->json([
+            'message' => 'Usuario suspendido definitivamente.',
+            'active' => $user->activo // Debería ser false
+        ]);
+    }
+
+    /**
+     * Reactivar usuario
+     */
+    public function unsuspend(User $user)
+    {
+        $user->unsuspend();
+
+        return response()->json([
+            'message' => 'Usuario reactivado correctamente.',
+            'active' => $user->activo // Debería ser true
+        ]);
+    }
 }
