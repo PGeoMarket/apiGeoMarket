@@ -115,11 +115,20 @@ class AuthController extends Controller
         }
 
         // Verificar que el usuario esté activo
-        if (!$user->activo) {
+        if ($user->isSuspended()) {
+        // Si está suspendido temporalmente
+        if ($user->suspended_until && $user->suspended_until > now()) {
+            $days_remaining = now()->diffInHours($user->suspended_until);
             throw ValidationException::withMessages([
-                'email' => ['La cuenta está inactiva.'],
+                'email' => ["Tu cuenta está suspendida temporalmente. Disponible en {$days_remaining} horas."],
             ]);
         }
+        
+        // Si está suspendido permanentemente
+        throw ValidationException::withMessages([
+            'email' => ['Tu cuenta está suspendida permanentemente.'],
+        ]);
+    }
 
         // Crear token de acceso
         $token = $user->createToken('auth-token')->plainTextToken;

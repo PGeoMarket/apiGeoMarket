@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class User extends Authenticatable
 {
-    use HasFactory,HasApiTokens;
+    use HasFactory, HasApiTokens;
 
     // Relaciones que se pueden incluir
     protected $allowIncluded = [
@@ -64,7 +64,8 @@ class User extends Authenticatable
         'email',
         'password_hash',
         'role_id',
-        'activo'
+        'activo',
+        'suspended_until'
     ];
 
     protected $hidden = [
@@ -117,11 +118,13 @@ class User extends Authenticatable
         return $this->hasMany(Support::class);
     }
 
-    public function messages(){
+    public function messages()
+    {
         return $this->hasMany(Message::class);
     }
 
-    public function chats()  {
+    public function chats()
+    {
         return $this->hasMany(Chat::class);
     }
 
@@ -202,5 +205,51 @@ class User extends Authenticatable
         }
 
         return $query->get();
+    }
+    public function isSuspended()
+    {
+        // Verificar suspensión temporal activa
+        if ($this->suspended_until && $this->suspended_until > now()) {
+            return true;
+        }
+        
+        // Si la suspensión temporal expiró, reactivar automáticamente
+        if ($this->suspended_until && $this->suspended_until <= now()) {
+            $this->update([
+                'activo' => true,
+                'suspended_until' => null
+            ]);
+            return false;
+        }
+        
+        // Suspensión definitiva
+        if ($this->activo === false) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    public function suspendTemporarily($days = 7)
+    {
+        return $this->update([
+            'suspended_until' => now()->addDays($days),
+            'activo' => false // mantener activo para suspension temporal
+        ]);
+    }
+
+    public function suspendPermanently()
+    {
+        return $this->update([
+            'activo' => false,
+            'suspended_until' => null // limpiar suspensión temporal
+        ]);
+    }
+    public function unsuspend()
+    {
+        return $this->update([
+            'activo' => true,
+            'suspended_until' => null
+        ]);
     }
 }
