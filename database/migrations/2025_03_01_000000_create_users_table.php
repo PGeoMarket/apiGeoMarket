@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
 
             $table->boolean('activo')->default(true);
+            $table->timestamp('suspended_until')->nullable(); 
 
             $table->timestamps();
         });
