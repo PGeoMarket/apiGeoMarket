@@ -18,8 +18,8 @@ class Report extends Model
         'reporter.image',
         'reason',
         'reportable',
-        'reportable.image'
-
+        'reportable.image',
+        'reportable.seller'
     ];
 
     protected $allowFilter = [
