@@ -85,7 +85,7 @@ class User extends Authenticatable
 
     public function favoritePublications()
     {
-        return $this->belongsToMany(Publication::class);
+        return $this->belongsToMany(Publication::class)->where('visibilidad', true);
     }
 
     public function reports()

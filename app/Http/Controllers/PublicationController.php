@@ -11,7 +11,7 @@ class PublicationController extends Controller
 {
     public function index()
     {
-       $publications = Publication::included()->filter()->sort()->getOrPaginate();
+       $publications = Publication::where('visibilidad', true)->included()->filter()->sort()->getOrPaginate();
         return response()->json($publications);
     }
 
