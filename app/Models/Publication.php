@@ -50,7 +50,9 @@ protected $allowFilter = [
     'category_id',
     'created_at',
     'updated_at',
-    'puntuacion_promedio'
+    'puntuacion_promedio',
+    'precio_min',
+    'precio_max'
 ];
 
 // Campos por los que se puede ordenar
@@ -130,13 +132,18 @@ protected $allowSort = [
         }
 
         $filters = request('filter');
-
         $allowFilter = collect($this->allowFilter);
 
         foreach ($filters as $filter => $value) {
-
             if ($allowFilter->contains($filter)) {
-                $query->WHERE($filter, 'LIKE', '%' . $value . '%');
+                // Manejar filtros especiales
+                if ($filter === 'precio_min') {
+                    $query->where('precio', '>=', (float) $value);
+                } elseif ($filter === 'precio_max') {
+                    $query->where('precio', '<=', (float) $value);
+                } else {
+                    $query->where($filter, 'LIKE', '%'. $value . '%');
+                }
             }
         }
     }
