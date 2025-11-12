@@ -72,7 +72,7 @@ class PublicationController extends Controller
             'category_id' => 'required|exists:categories,id',
             'seller_id'   => 'required|exists:sellers,id',
             'imagen'      => 'nullable|image|max:10240', // 👈 ahora acepta archivo
-            'visibilidad' => 'nullable'
+            'visibilidad' => 'required|boolean'
         ]);
 
         $data['fecha_actualizacion'] = now();
