@@ -145,16 +145,21 @@ protected $allowSort = [
                     $query->where('precio', '>=', (float) $value);
                 } elseif ($filter === 'precio_max') {
                     $query->where('precio', '<=', (float) $value);
+                } elseif (in_array($filter, ['user_lat', 'user_lon', 'max_distance'])) {
+                    // Estos se manejan en applyDistanceFilter
+                    continue;
                 } else {
                     $query->where($filter, 'LIKE', '%'. $value . '%');
                 }
             }
         }
+
+        // Aplicar filtro de distancia SI hay coordenadas
+        $this->applyDistanceFilter($query);
     }
 
     public function scopeSort(Builder $query)
     {
-
         if (empty($this->allowSort) || empty(request("sort"))) {
             return;
         }
@@ -163,18 +168,25 @@ protected $allowSort = [
         $allowSort = collect($this->allowSort);
 
         foreach ($sortFields as $sortField) {
-
             $direction = 'asc';
-
             if (substr($sortField, 0, 1) === "-") {
                 $direction = 'desc';
                 $sortField = substr($sortField, 1);
             }
 
-            //return $sortField;
-
             if ($allowSort->contains($sortField)) {
-                $query->orderBy($sortField, $direction);
+                if ($sortField === 'distance') {
+                    // Solo aplicar cálculo de distancia si hay coordenadas
+                    $filters = request('filter');
+                    $userLat = $filters['user_lat'] ?? null;
+                    $userLon = $filters['user_lon'] ?? null;
+                    
+                    if ($userLat && $userLon) {
+                        $this->applyDistanceCalculation($query, $direction);
+                    }
+                } else {
+                    $query->orderBy($sortField, $direction);
+                }
             }
         }
     }
