@@ -195,7 +195,7 @@ class UserController extends Controller
     // Favoritos de un usuario
     public function favoritos($id)
     {
-        $usuario = User::with('favoritePublications.image')->findOrFail($id);
+        $usuario = User::with(['favoritePublications.image','favoritePublications.category'])->findOrFail($id);
 
         return response()->json($usuario->favoritePublications);
     }
