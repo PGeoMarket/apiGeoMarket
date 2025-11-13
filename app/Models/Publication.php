@@ -52,7 +52,10 @@ protected $allowFilter = [
     'updated_at',
     'puntuacion_promedio',
     'precio_min',
-    'precio_max'
+    'precio_max',
+    'user_lat',
+    'user_lon',        
+    'max_distance'
 ];
 
 // Campos por los que se puede ordenar
@@ -65,7 +68,8 @@ protected $allowSort = [
     'category_id',
     'created_at',
     'updated_at',
-    'puntuacion_promedio'
+    'puntuacion_promedio',
+    'distance'
 ];
 
     //Relaciones
@@ -187,5 +191,65 @@ protected $allowSort = [
         }
 
         return $query->get();
+    }
+
+    /**
+     * Aplicar filtro de distancia (SOLO si hay coordenadas en el request)
+     */
+    private function applyDistanceFilter(Builder $query)
+    {
+        $filters = request('filter');
+        
+        $userLat = $filters['user_lat'] ?? null;
+        $userLon = $filters['user_lon'] ?? null;
+        $maxDistance = $filters['max_distance'] ?? null;
+
+        // Si no hay coordenadas, no hacer nada
+        if (!$userLat || !$userLon) {
+            return;
+        }
+
+        // Aplicar el cálculo de distancia
+        $this->applyDistanceCalculation($query, null, $maxDistance);
+    }
+
+    /**
+     * Aplicar cálculo de distancia (Fórmula Haversine)
+     */
+    private function applyDistanceCalculation(Builder $query, $direction = null, $maxDistance = null)
+    {
+        $filters = request('filter');
+        
+        $userLat = $filters['user_lat'] ?? null;
+        $userLon = $filters['user_lon'] ?? null;
+        $maxDistance = $maxDistance ?? ($filters['max_distance'] ?? null);
+
+        if (!$userLat || !$userLon) {
+            return $query;
+        }
+
+        // Fórmula Haversine para calcular distancia en km
+        $haversine = "(6371 * acos(cos(radians(?)) 
+                      * cos(radians(seller_coordinates.latitude)) 
+                      * cos(radians(seller_coordinates.longitude) - radians(?)) 
+                      + sin(radians(?)) 
+                      * sin(radians(seller_coordinates.latitude))))";
+
+        // Join con la tabla de coordenadas del vendedor
+        $query->join('seller_coordinates', 'publications.seller_id', '=', 'seller_coordinates.seller_id')
+              ->select('publications.*') // Mantiene todos los campos de publication
+              ->selectRaw("{$haversine} AS distance", [$userLat, $userLon, $userLat]); // SIEMPRE agrega distance
+
+        // Filtrar por distancia máxima si se especifica
+        if ($maxDistance) {
+            $query->having('distance', '<=', (float) $maxDistance);
+        }
+
+        // Ordenar por distancia si se solicita
+        if ($direction) {
+            $query->orderBy('distance', $direction);
+        }
+
+        return $query;
     }
 }
