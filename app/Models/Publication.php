@@ -52,7 +52,10 @@ protected $allowFilter = [
     'updated_at',
     'puntuacion_promedio',
     'precio_min',
-    'precio_max'
+    'precio_max',
+    'user_lat',
+    'user_lon',        
+    'max_distance'
 ];
 
 // Campos por los que se puede ordenar
@@ -65,7 +68,8 @@ protected $allowSort = [
     'category_id',
     'created_at',
     'updated_at',
-    'puntuacion_promedio'
+    'puntuacion_promedio',
+    'distance'
 ];
 
     //Relaciones
@@ -126,53 +130,70 @@ protected $allowSort = [
     }
 
     public function scopeFilter(Builder $query)
-    {
-        if (empty($this->allowFilter) || empty(request("filter"))) {
-            return;
-        }
+{
+    if (empty($this->allowFilter) || empty(request("filter"))) {
+        return;
+    }
 
-        $filters = request('filter');
-        $allowFilter = collect($this->allowFilter);
+    $filters = request('filter');
+    $allowFilter = collect($this->allowFilter);
 
-        foreach ($filters as $filter => $value) {
-            if ($allowFilter->contains($filter)) {
-                // Manejar filtros especiales
-                if ($filter === 'precio_min') {
-                    $query->where('precio', '>=', (float) $value);
-                } elseif ($filter === 'precio_max') {
-                    $query->where('precio', '<=', (float) $value);
-                } else {
-                    $query->where($filter, 'LIKE', '%'. $value . '%');
-                }
+    foreach ($filters as $filter => $value) {
+        if ($allowFilter->contains($filter)) {
+            if ($filter === 'precio_min') {
+                $query->where('precio', '>=', (float) $value);
+            } elseif ($filter === 'precio_max') {
+                $query->where('precio', '<=', (float) $value);
+            } elseif (in_array($filter, ['user_lat', 'user_lon', 'max_distance'])) {
+                continue; // Se manejan después
+            } else {
+                $query->where($filter, 'LIKE', '%'. $value . '%');
             }
         }
     }
 
-    public function scopeSort(Builder $query)
-    {
+    // Aplicar filtro de distancia UNA SOLA VEZ
+    $userLat = $filters['user_lat'] ?? null;
+    $userLon = $filters['user_lon'] ?? null;
+    
+    if ($userLat && $userLon) {
+        $this->applyDistanceCalculation($query, null, $filters['max_distance'] ?? null);
+    }
+    }
 
-        if (empty($this->allowSort) || empty(request("sort"))) {
-            return;
+
+    public function scopeSort(Builder $query)
+{
+    if (empty($this->allowSort) || empty(request("sort"))) {
+        return;
+    }
+
+    $sortFields = explode(',', request('sort'));
+    $allowSort = collect($this->allowSort);
+
+    foreach ($sortFields as $sortField) {
+        $direction = 'asc';
+        if (substr($sortField, 0, 1) === "-") {
+            $direction = 'desc';
+            $sortField = substr($sortField, 1);
         }
 
-        $sortFields = explode(',', request('sort'));
-        $allowSort = collect($this->allowSort);
-
-        foreach ($sortFields as $sortField) {
-
-            $direction = 'asc';
-
-            if (substr($sortField, 0, 1) === "-") {
-                $direction = 'desc';
-                $sortField = substr($sortField, 1);
-            }
-
-            //return $sortField;
-
-            if ($allowSort->contains($sortField)) {
+        if ($allowSort->contains($sortField)) {
+            if ($sortField === 'distance') {
+                // Verificar si ya se aplicó el cálculo de distancia
+                $filters = request('filter');
+                $userLat = $filters['user_lat'] ?? null;
+                $userLon = $filters['user_lon'] ?? null;
+                
+                if ($userLat && $userLon) {
+                    // Solo ordenar, no volver a aplicar joins
+                    $query->orderBy('distance', $direction);
+                }
+            } else {
                 $query->orderBy($sortField, $direction);
             }
         }
+    }
     }
 //
     public function scopeGetOrPaginate(Builder $query)
@@ -188,4 +209,62 @@ protected $allowSort = [
 
         return $query->get();
     }
+
+    /**
+     * Aplicar filtro de distancia (SOLO si hay coordenadas en el request)
+     */
+    private function applyDistanceFilter(Builder $query)
+    {
+        $filters = request('filter');
+        
+        $userLat = $filters['user_lat'] ?? null;
+        $userLon = $filters['user_lon'] ?? null;
+        $maxDistance = $filters['max_distance'] ?? null;
+
+        // Si no hay coordenadas, no hacer nada
+        if (!$userLat || !$userLon) {
+            return;
+        }
+
+        // Aplicar el cálculo de distancia
+        $this->applyDistanceCalculation($query, null, $maxDistance);
+    }
+
+    /**
+     * Aplicar cálculo de distancia (Fórmula Haversine)
+     */
+    private function applyDistanceCalculation(Builder $query, $direction = null, $maxDistance = null)
+{
+    $filters = request('filter');
+    
+    $userLat = $filters['user_lat'] ?? null;
+    $userLon = $filters['user_lon'] ?? null;
+
+    if (!$userLat || !$userLon) {
+        return $query;
+    }
+
+    // Fórmula Haversine
+    $haversine = "(6371 * acos(cos(radians(?)) 
+                  * cos(radians(coordinates.latitud)) 
+                  * cos(radians(coordinates.longitud) - radians(?)) 
+                  + sin(radians(?)) 
+                  * sin(radians(coordinates.latitud))))";
+
+    $sellerClass = 'App\\Models\\Seller';
+    
+    $query->join('coordinates', function($join) use ($sellerClass) {
+            $join->on('publications.seller_id', '=', 'coordinates.coordinateable_id')
+                 ->where('coordinates.coordinateable_type', '=', $sellerClass);
+        })
+        ->select('publications.*')
+        ->selectRaw("{$haversine} AS distance", [$userLat, $userLon, $userLat]);
+
+    if ($maxDistance) {
+        $query->having('distance', '<=', (float) $maxDistance);
+    }
+
+    return $query;
+    }
+        
 }
