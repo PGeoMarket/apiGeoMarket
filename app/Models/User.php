@@ -28,7 +28,8 @@ class User extends Authenticatable
         'favoritePublications.seller',
         'favoritePublications.image',
         'support',
-        'image'
+        'image',
+        'seller.publications.category'
     ];
 
     // Campos por los que se puede filtrar
