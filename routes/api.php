@@ -85,52 +85,53 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/device-token', [DeviceTokenController::class, 'destroy']);
 });
 
-Route::get('/test-firebase-direct', function () {
+Route::get('/clean-and-test-tokens', function () {
     $debugInfo = [];
     $userId = 4;
     
-    $debugInfo[] = "🧪 PRUEBA CON CREDENCIALES DIRECTAS";
+    $debugInfo[] = "🧹 INICIANDO LIMPIEZA DE TOKENS INVÁLIDOS";
     $debugInfo[] = "Usuario ID: " . $userId;
     
     try {
-        $service = new FirebaseNotificationService();
+        $service = new App\Services\FirebaseNotificationService();
         
-        $debugInfo[] = "✅ Servicio inicializado con credenciales directas";
-        $debugInfo[] = "📧 Client Email: firebase-adminsdk-fbsvc@geomarket-9e06d.iam.gserviceaccount.com";
+        // 1. Limpiar tokens inválidos
+        $debugInfo[] = "🔍 Buscando tokens inválidos...";
+        $cleanupResult = $service->cleanInvalidTokens($userId);
         
-        // Probar generación de token
-        $debugInfo[] = "🔄 Generando access token...";
-        $accessToken = $service->getAccessToken();
+        $debugInfo[] = "📊 Resultado limpieza:";
+        $debugInfo[] = "   - Total tokens: " . $cleanupResult['total_tokens'];
+        $debugInfo[] = "   - Tokens inválidos: " . $cleanupResult['invalid_tokens'];
+        $debugInfo[] = "   - Tokens válidos: " . $cleanupResult['valid_tokens'];
         
-        if ($accessToken) {
-            $debugInfo[] = "✅ Access token generado: " . substr($accessToken, 0, 20) . "...";
+        // 2. Si hay tokens válidos, probar notificación
+        if ($cleanupResult['valid_tokens'] > 0) {
+            $debugInfo[] = "🚀 Probando notificación con tokens válidos...";
             
-            // Enviar notificación real
-            $debugInfo[] = "📤 Enviando notificación...";
             $result = $service->sendToUser(
                 $userId,
-                '🔔 Prueba Credenciales Directas',
-                '¡Funciona! Notificación con credenciales en código',
-                ['test' => 'direct_credentials', 'timestamp' => now()->toISOString()]
+                '🔔 Prueba Después de Limpieza',
+                'Notificación después de limpiar tokens inválidos',
+                ['test' => 'after_cleanup', 'timestamp' => now()->toISOString()]
             );
             
-            $debugInfo[] = "📦 Resultado: " . ($result ? 'ÉXITO 🎉' : 'FALLO ❌');
-            
-            return response()->json([
-                'success' => $result,
-                'debug_info' => $debugInfo,
-                'user_id' => $userId,
-                'message' => $result ? 'Notificación enviada exitosamente' : 'Error al enviar notificación'
-            ]);
+            $debugInfo[] = "📦 Resultado notificación: " . ($result ? 'ÉXITO 🎉' : 'FALLO ❌');
             
         } else {
-            $debugInfo[] = "❌ NO se pudo generar access token";
-            return response()->json([
-                'success' => false,
-                'debug_info' => $debugInfo,
-                'error' => 'No se pudo generar access token'
-            ]);
+            $debugInfo[] = "⚠️ No hay tokens válidos después de la limpieza";
+            $debugInfo[] = "💡 El usuario necesita abrir la app para generar nuevos tokens";
+            $result = false;
         }
+        
+        return response()->json([
+            'success' => $result,
+            'debug_info' => $debugInfo,
+            'cleanup_result' => $cleanupResult,
+            'user_id' => $userId,
+            'next_steps' => $cleanupResult['valid_tokens'] > 0 ? 
+                'Los tokens válidos funcionaron correctamente' : 
+                'El usuario debe abrir la app para generar nuevos tokens FCM'
+        ]);
         
     } catch (Exception $e) {
         $debugInfo[] = "💥 EXCEPCIÓN: " . $e->getMessage();
@@ -138,8 +139,35 @@ Route::get('/test-firebase-direct', function () {
         return response()->json([
             'success' => false,
             'debug_info' => $debugInfo,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
+            'error' => $e->getMessage()
         ]);
     }
+});
+
+Route::get('/view-user-tokens/{userId}', function ($userId) {
+    $tokens = DeviceToken::where('user_id', $userId)
+        ->orderBy('is_active', 'desc')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    $tokenInfo = [];
+    
+    foreach ($tokens as $token) {
+        $tokenInfo[] = [
+            'id' => $token->id,
+            'fcm_token_preview' => substr($token->fcm_token, 0, 20) . '...',
+            'platform' => $token->platform,
+            'is_active' => $token->is_active,
+            'created_at' => $token->created_at,
+            'updated_at' => $token->updated_at
+        ];
+    }
+    
+    return response()->json([
+        'user_id' => $userId,
+        'total_tokens' => $tokens->count(),
+        'active_tokens' => $tokens->where('is_active', true)->count(),
+        'inactive_tokens' => $tokens->where('is_active', false)->count(),
+        'tokens' => $tokenInfo
+    ]);
 });

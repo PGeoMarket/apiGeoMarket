@@ -160,4 +160,76 @@ class FirebaseNotificationService
             throw new \Exception("Error en sendToToken: " . $e->getMessage());
         }
     }
+    /**
+ * Limpiar tokens inválidos/expirados
+ */
+public function cleanInvalidTokens($userId = null)
+{
+    try {
+        $query = DeviceToken::where('is_active', true);
+        
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+        
+        $tokens = $query->get();
+        $totalTokens = $tokens->count();
+        $invalidCount = 0;
+
+        foreach ($tokens as $token) {
+            // Probar cada token individualmente
+            $isValid = $this->validateToken($token->fcm_token);
+            
+            if (!$isValid) {
+                $token->update(['is_active' => false]);
+                $invalidCount++;
+            }
+        }
+
+        return [
+            'total_tokens' => $totalTokens,
+            'invalid_tokens' => $invalidCount,
+            'valid_tokens' => $totalTokens - $invalidCount
+        ];
+
+    } catch (\Exception $e) {
+        throw new \Exception("Error limpiando tokens: " . $e->getMessage());
+    }
+}
+
+/**
+ * Validar si un token FCM es válido
+ */
+private function validateToken($token)
+{
+    try {
+        $accessToken = $this->getAccessToken();
+        
+        $payload = [
+            'message' => [
+                'token' => $token,
+                'data' => ['test' => 'validation'],
+                'android' => ['priority' => 'high']
+            ]
+        ];
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $accessToken,
+            'Content-Type' => 'application/json',
+        ])->timeout(10)->post($this->fcmUrl, $payload);
+
+        $result = $response->json();
+
+        // Si recibe UNREGISTERED, el token es inválido
+        if (isset($result['error']['details'][0]['errorCode']) && 
+            $result['error']['details'][0]['errorCode'] === 'UNREGISTERED') {
+            return false;
+        }
+
+        return $response->successful();
+
+    } catch (\Exception $e) {
+        return false;
+    }
+}
 }
