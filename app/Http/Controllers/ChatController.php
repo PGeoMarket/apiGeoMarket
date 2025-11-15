@@ -237,10 +237,10 @@ class ChatController extends Controller
         }
     }
 
-   private function sendChatPushNotification(Chat $chat, Message $message)
+    private function sendChatPushNotification(Chat $chat, Message $message)
 {
     try {
-        // 1. Determinar el receptor del mensaje
+        // 1. Determinar receptor
         $recipientId = $message->sender_id == $chat->initiator_user_id
             ? $chat->responder_user_id
             : $chat->initiator_user_id;
@@ -250,12 +250,12 @@ class ChatController extends Controller
             return;
         }
 
-        // 3. Obtener nombre del remitente
+        // 3. Nombre del remitente
         $senderName = $message->sender->primer_nombre . ' ' . $message->sender->primer_apellido;
 
-        // 4. Enviar notificación usando el servicio
+        // 4. Enviar notificación
         $firebaseService = new FirebaseNotificationService();
-        $notificationSent = $firebaseService->sendChatNotification(
+        $firebaseService->sendChatNotification(
             $recipientId,
             $senderName,
             $message->text,
@@ -263,10 +263,9 @@ class ChatController extends Controller
             $message->sender_id
         );
 
-       
-
     } catch (\Exception $e) {
-        // No lanzamos excepción para no interrumpir el envío del mensaje
+        // Silencioso para no romper el envío del mensaje
+        error_log('Error en push: ' . $e->getMessage());
     }
 }
 
