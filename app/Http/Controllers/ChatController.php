@@ -240,34 +240,32 @@ class ChatController extends Controller
    private function sendPushNotification(Chat $chat, Message $message)
 {
     try {
-        // Determinar quién es el receptor
+        // 1. Determinar receptor
         $recipientId = $message->sender_id == $chat->initiator_user_id
             ? $chat->responder_user_id
             : $chat->initiator_user_id;
 
         $senderName = $message->sender->primer_nombre . ' ' . $message->sender->primer_apellido;
 
+        // 2. Datos para la notificación
         $data = [
             'chat_id' => (string)$chat->id,
             'sender_id' => (string)$message->sender_id,
-            'sender_name' => $senderName,
-            'type' => 'chat_message',
-            'action' => 'open_chat'
+            'type' => 'chat_message'
         ];
 
-        // Enviar notificación
-        $firebaseService = new FirebaseNotificationService();
-        $firebaseService->sendToUser(
+        // 3. Enviar notificación (SOLUCIÓN DIRECTA)
+        $firebaseService = new \App\Services\FirebaseNotificationService();
+        $result = $firebaseService->sendNotification(
             $recipientId,
             $senderName,
             $message->text,
             $data
         );
 
-        Log::info("✅ Solicitud de notificación FCM enviada para usuario $recipientId");
+        // 4. Log simple
 
     } catch (\Exception $e) {
-        Log::error("❌ Error en sendPushNotification: " . $e->getMessage());
     }
 }
 

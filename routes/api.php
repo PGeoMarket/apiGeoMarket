@@ -144,30 +144,17 @@ Route::get('/clean-and-test-tokens', function () {
     }
 });
 
-Route::get('/view-user-tokens/{userId}', function ($userId) {
-    $tokens = DeviceToken::where('user_id', $userId)
-        ->orderBy('is_active', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->get();
+
+Route::get('/test-noti-simple', function () {
+    $service = new FirebaseNotificationService();
     
-    $tokenInfo = [];
+    // Usuario 4 (como en tu prueba)
+    $result = $service->sendNotification(
+        4,
+        '🔥 NOTIFICACIÓN DE PRUEBA',
+        '¡Esta debería funcionar!',
+        ['test' => 'simple', 'time' => now()->toISOString()]
+    );
     
-    foreach ($tokens as $token) {
-        $tokenInfo[] = [
-            'id' => $token->id,
-            'fcm_token_preview' => substr($token->fcm_token, 0, 20) . '...',
-            'platform' => $token->platform,
-            'is_active' => $token->is_active,
-            'created_at' => $token->created_at,
-            'updated_at' => $token->updated_at
-        ];
-    }
-    
-    return response()->json([
-        'user_id' => $userId,
-        'total_tokens' => $tokens->count(),
-        'active_tokens' => $tokens->where('is_active', true)->count(),
-        'inactive_tokens' => $tokens->where('is_active', false)->count(),
-        'tokens' => $tokenInfo
-    ]);
+    return response()->json($result);
 });
