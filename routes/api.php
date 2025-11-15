@@ -95,7 +95,7 @@ Route::get('/test-firebase', function () {
     $service = new FirebaseNotificationService();
     
     // Reemplaza 123 con un ID de usuario REAL que tenga tokens en tu base de datos
-    $userId = 123; // ⚠️ CAMBIA ESTO por un ID real
+    $userId = 4; // ⚠️ CAMBIA ESTO por un ID real
     
     Log::info("🎯 Probando con usuario ID: " . $userId);
     
