@@ -8,6 +8,10 @@ use App\Models\Publication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Ably\AblyRest;
+use App\Services\FirebaseNotificationService;
+use Illuminate\Support\Facades\Log;
+
+
 
 class ChatController extends Controller
 {
@@ -233,38 +237,38 @@ class ChatController extends Controller
         }
     }
 
-    private function sendPushNotification(Chat $chat, Message $message)
-    {
-        try {
-            $ably = new AblyRest(['key' => env('ABLY_API_KEY')]);
-            $channel = $ably->channels->get($chat->ably_channel_id);
+   private function sendPushNotification(Chat $chat, Message $message)
+{
+    try {
+        // Determinar quién es el receptor
+        $recipientId = $message->sender_id == $chat->initiator_user_id
+            ? $chat->responder_user_id
+            : $chat->initiator_user_id;
 
-            // Determinar quién es el receptor
-            $recipientId = $message->sender_id === $chat->initiator_user_id 
-                ? $chat->responder_user_id 
-                : $chat->initiator_user_id;
+        $senderName = $message->sender->primer_nombre . ' ' . $message->sender->primer_apellido;
 
-            // Nombre del remitente
-            $senderName = $message->sender->primer_nombre . ' ' . $message->sender->primer_apellido;
+        $data = [
+            'chat_id' => (string)$chat->id,
+            'sender_id' => (string)$message->sender_id,
+            'sender_name' => $senderName,
+            'type' => 'chat_message',
+            'action' => 'open_chat'
+        ];
 
-            // Publicar mensaje con configuración de push
-            $channel->publish('new-message', $message->toArray(), [
-                'push' => [
-                    'notification' => [
-                        'title' => $senderName,
-                        'body' => $message->text,
-                    ],
-                    'data' => [
-                        'chat_id' => (string)$chat->id,
-                        'sender_id' => (string)$message->sender_id,
-                        'type' => 'chat_message'
-                    ]
-                ]
-            ]);
+        // Enviar notificación
+        $firebaseService = new FirebaseNotificationService();
+        $firebaseService->sendToUser(
+            $recipientId,
+            $senderName,
+            $message->text,
+            $data
+        );
 
-        } catch (\Exception $e) {
-            // No lanzamos error para no interrumpir el envío del mensaje
-        }
+        Log::info("✅ Solicitud de notificación FCM enviada para usuario $recipientId");
+
+    } catch (\Exception $e) {
+        Log::error("❌ Error en sendPushNotification: " . $e->getMessage());
     }
+}
 
 }
