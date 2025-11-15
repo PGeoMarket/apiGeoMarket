@@ -191,7 +191,7 @@ class ChatController extends Controller
             $chat->touch();
 
             // 👇 NUEVO: Enviar push notification
-            $this->sendPushNotification($chat, $message);
+            $this->sendChatPushNotification($chat, $message);
 
             return response()->json([
                 'success' => true,
@@ -237,35 +237,36 @@ class ChatController extends Controller
         }
     }
 
-   private function sendPushNotification(Chat $chat, Message $message)
+   private function sendChatPushNotification(Chat $chat, Message $message)
 {
     try {
-        // 1. Determinar receptor
+        // 1. Determinar el receptor del mensaje
         $recipientId = $message->sender_id == $chat->initiator_user_id
             ? $chat->responder_user_id
             : $chat->initiator_user_id;
 
+        // 2. Verificar que no sea mensaje propio
+        if ($recipientId == $message->sender_id) {
+            return;
+        }
+
+        // 3. Obtener nombre del remitente
         $senderName = $message->sender->primer_nombre . ' ' . $message->sender->primer_apellido;
 
-        // 2. Datos para la notificación
-        $data = [
-            'chat_id' => (string)$chat->id,
-            'sender_id' => (string)$message->sender_id,
-            'type' => 'chat_message'
-        ];
-
-        // 3. Enviar notificación (SOLUCIÓN DIRECTA)
-        $firebaseService = new \App\Services\FirebaseNotificationService();
-        $result = $firebaseService->sendNotification(
+        // 4. Enviar notificación usando el servicio
+        $firebaseService = new FirebaseNotificationService();
+        $notificationSent = $firebaseService->sendChatNotification(
             $recipientId,
             $senderName,
             $message->text,
-            $data
+            $chat->id,
+            $message->sender_id
         );
 
-        // 4. Log simple
+       
 
     } catch (\Exception $e) {
+        // No lanzamos excepción para no interrumpir el envío del mensaje
     }
 }
 

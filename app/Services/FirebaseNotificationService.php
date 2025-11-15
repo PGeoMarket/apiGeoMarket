@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\DeviceToken;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
 
 class FirebaseNotificationService
 {
@@ -61,40 +63,115 @@ class FirebaseNotificationService
     /**
      * 🎯 MÉTODO PRINCIPAL - ENVIAR NOTIFICACIÓN
      */
-    public function sendNotification($userId, $title, $body, $data = [])
+    public function sendChatNotification($recipientUserId, $senderName, $messageText, $chatId, $senderId)
     {
         try {
-            // 1. Obtener ÚLTIMO token activo del usuario
-            $token = DeviceToken::where('user_id', $userId)
+            // 1. Obtener tokens activos del receptor
+            $tokens = DeviceToken::where('user_id', $recipientUserId)
                 ->where('is_active', true)
-                ->latest()
-                ->first();
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-            if (!$token) {
-                return ['success' => false, 'error' => 'No hay tokens activos'];
+            if ($tokens->isEmpty()) {
+                Log::info("❌ Usuario $recipientUserId no tiene tokens activos para notificación de chat");
+                return false;
             }
 
-            // 2. Generar access token
+            Log::info("💬 Enviando notificación de chat a usuario $recipientUserId - Tokens: " . $tokens->count());
+
             $accessToken = $this->getAccessToken();
             if (!$accessToken) {
-                return ['success' => false, 'error' => 'No se pudo generar access token'];
+                Log::error("❌ No se pudo generar access token para notificación de chat");
+                return false;
             }
 
-            // 3. Preparar payload para FCM
+            // 2. Preparar datos de la notificación
+            $title = "💬 $senderName";
+            $body = $messageText;
+            
+            // Limitar longitud del mensaje para la notificación
+            if (strlen($body) > 100) {
+                $body = substr($body, 0, 100) . '...';
+            }
+
+            $data = [
+                'type' => 'chat_message',
+                'chat_id' => (string)$chatId,
+                'sender_id' => (string)$senderId,
+                'sender_name' => $senderName,
+                'message' => $messageText,
+                'action' => 'open_chat',
+                'timestamp' => now()->toISOString()
+            ];
+
+            $successCount = 0;
+            $invalidTokens = [];
+
+            // 3. Enviar a cada token activo
+            foreach ($tokens as $token) {
+                $result = $this->sendToToken($token->fcm_token, $title, $body, $data, $accessToken);
+                
+                if ($result['success']) {
+                    $successCount++;
+                    Log::info("✅ Notificación de chat enviada a usuario $recipientUserId");
+                    break; // Si funciona con un token, no probar más
+                } else {
+                    if ($result['invalid_token']) {
+                        $invalidTokens[] = $token->id;
+                    }
+                }
+            }
+
+            // 4. Desactivar tokens inválidos
+            if (!empty($invalidTokens)) {
+                DeviceToken::whereIn('id', $invalidTokens)->update(['is_active' => false]);
+                Log::info("🧹 Desactivados " . count($invalidTokens) . " tokens inválidos del usuario $recipientUserId");
+            }
+
+            return $successCount > 0;
+
+        } catch (\Exception $e) {
+            Log::error("💥 Error enviando notificación de chat: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Enviar a token individual
+     */
+    private function sendToToken($fcmToken, $title, $body, $data, $accessToken)
+    {
+        try {
             $fcmUrl = "https://fcm.googleapis.com/v1/projects/geomarket-9e06d/messages:send";
             
             $payload = [
                 'message' => [
-                    'token' => $token->fcm_token,
+                    'token' => $fcmToken,
                     'notification' => [
                         'title' => $title,
-                        'body' => $body
+                        'body' => $body,
+                        'sound' => 'default',
+                        'badge' => '1'
                     ],
-                    'data' => $data
+                    'data' => $data,
+                    'android' => [
+                        'priority' => 'high',
+                        'notification' => [
+                            'sound' => 'default',
+                            'channel_id' => 'chat_messages'
+                        ]
+                    ],
+                    'apns' => [
+                        'payload' => [
+                            'aps' => [
+                                'sound' => 'default',
+                                'badge' => 1
+                            ]
+                        ]
+                    ]
                 ]
             ];
 
-            // 4. Enviar a FCM
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $accessToken,
                 'Content-Type' => 'application/json',
@@ -103,19 +180,18 @@ class FirebaseNotificationService
             $result = $response->json();
 
             if ($response->successful()) {
-                return ['success' => true, 'message' => 'Notificación enviada'];
+                return ['success' => true, 'invalid_token' => false];
             } else {
-                // Si el token es inválido, desactivarlo
-                if (isset($result['error']['details'][0]['errorCode']) && 
-                    $result['error']['details'][0]['errorCode'] === 'UNREGISTERED') {
-                    $token->update(['is_active' => false]);
-                    return ['success' => false, 'error' => 'Token inválido - Se desactivó'];
-                }
-                return ['success' => false, 'error' => 'Error FCM: ' . json_encode($result)];
+                // Verificar si el token es inválido
+                $isInvalid = isset($result['error']['details'][0]['errorCode']) && 
+                            $result['error']['details'][0]['errorCode'] === 'UNREGISTERED';
+                
+                return ['success' => false, 'invalid_token' => $isInvalid];
             }
 
         } catch (\Exception $e) {
-            return ['success' => false, 'error' => 'Excepción: ' . $e->getMessage()];
+            Log::error("❌ Error enviando a token: " . $e->getMessage());
+            return ['success' => false, 'invalid_token' => false];
         }
     }
 }

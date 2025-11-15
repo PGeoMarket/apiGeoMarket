@@ -85,76 +85,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/device-token', [DeviceTokenController::class, 'destroy']);
 });
 
-Route::get('/clean-and-test-tokens', function () {
-    $debugInfo = [];
-    $userId = 4;
+Route::delete('/admin/tokens/clean-inactive', function () {
+    $inactiveTokens = DeviceToken::where('is_active', false)->count();
     
-    $debugInfo[] = "🧹 INICIANDO LIMPIEZA DE TOKENS INVÁLIDOS";
-    $debugInfo[] = "Usuario ID: " . $userId;
+    DeviceToken::where('is_active', false)->delete();
     
-    try {
-        $service = new App\Services\FirebaseNotificationService();
-        
-        // 1. Limpiar tokens inválidos
-        $debugInfo[] = "🔍 Buscando tokens inválidos...";
-        $cleanupResult = $service->cleanInvalidTokens($userId);
-        
-        $debugInfo[] = "📊 Resultado limpieza:";
-        $debugInfo[] = "   - Total tokens: " . $cleanupResult['total_tokens'];
-        $debugInfo[] = "   - Tokens inválidos: " . $cleanupResult['invalid_tokens'];
-        $debugInfo[] = "   - Tokens válidos: " . $cleanupResult['valid_tokens'];
-        
-        // 2. Si hay tokens válidos, probar notificación
-        if ($cleanupResult['valid_tokens'] > 0) {
-            $debugInfo[] = "🚀 Probando notificación con tokens válidos...";
-            
-            $result = $service->sendToUser(
-                $userId,
-                '🔔 Prueba Después de Limpieza',
-                'Notificación después de limpiar tokens inválidos',
-                ['test' => 'after_cleanup', 'timestamp' => now()->toISOString()]
-            );
-            
-            $debugInfo[] = "📦 Resultado notificación: " . ($result ? 'ÉXITO 🎉' : 'FALLO ❌');
-            
-        } else {
-            $debugInfo[] = "⚠️ No hay tokens válidos después de la limpieza";
-            $debugInfo[] = "💡 El usuario necesita abrir la app para generar nuevos tokens";
-            $result = false;
-        }
-        
-        return response()->json([
-            'success' => $result,
-            'debug_info' => $debugInfo,
-            'cleanup_result' => $cleanupResult,
-            'user_id' => $userId,
-            'next_steps' => $cleanupResult['valid_tokens'] > 0 ? 
-                'Los tokens válidos funcionaron correctamente' : 
-                'El usuario debe abrir la app para generar nuevos tokens FCM'
-        ]);
-        
-    } catch (Exception $e) {
-        $debugInfo[] = "💥 EXCEPCIÓN: " . $e->getMessage();
-        
-        return response()->json([
-            'success' => false,
-            'debug_info' => $debugInfo,
-            'error' => $e->getMessage()
-        ]);
-    }
-});
-
-
-Route::get('/test-noti-simple', function () {
-    $service = new FirebaseNotificationService();
-    
-    // Usuario 4 (como en tu prueba)
-    $result = $service->sendNotification(
-        15,
-        '🔥 NOTIFICACIÓN DE PRUEBA',
-        '¡Esta debería funcionar!',
-        ['test' => 'simple', 'time' => now()->toISOString()]
-    );
-    
-    return response()->json($result);
+    return response()->json([
+        'success' => true,
+        'message' => "Tokens inactivos eliminados: $inactiveTokens",
+        'deleted_count' => $inactiveTokens
+    ]);
 });
