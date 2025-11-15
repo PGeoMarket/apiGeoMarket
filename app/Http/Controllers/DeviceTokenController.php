@@ -64,4 +64,73 @@ class DeviceTokenController extends Controller
         'message' => 'Token desactivado'
     ]);
 }
+    public function cleanMyTokens()
+    {
+        try {
+            $userId = Auth::id();
+            $tokens = DeviceToken::where('user_id', $userId)
+                ->where('is_active', true)
+                ->get();
+
+            $invalidCount = 0;
+
+            foreach ($tokens as $token) {
+                // Verificar si el token es válido
+                $isValid = $this->validateToken($token->fcm_token);
+                
+                if (!$isValid) {
+                    $token->update(['is_active' => false]);
+                    $invalidCount++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Limpieza completada. $invalidCount tokens inválidos desactivados",
+                'invalid_count' => $invalidCount,
+                'remaining_tokens' => $tokens->count() - $invalidCount
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error en limpieza: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Validar token individual con Firebase
+     */
+    private function validateToken($fcmToken)
+    {
+        // Implementación simple de validación
+        // Puedes hacer una prueba de envío silenciosa aquí
+        return true; // Por ahora asumimos que es válido
+    }
+
+    /**
+     * Obtener estadísticas de mis tokens
+     */
+    public function getMyTokenStats()
+    {
+        $userId = Auth::id();
+        
+        $stats = [
+            'total_tokens' => DeviceToken::where('user_id', $userId)->count(),
+            'active_tokens' => DeviceToken::where('user_id', $userId)
+                ->where('is_active', true)
+                ->count(),
+            'tokens_by_platform' => DeviceToken::where('user_id', $userId)
+                ->where('is_active', true)
+                ->selectRaw('platform, count(*) as count')
+                ->groupBy('platform')
+                ->get()
+        ];
+
+        return response()->json([
+            'success' => true,
+            'stats' => $stats
+        ]);
+    }
 }

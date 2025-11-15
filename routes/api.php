@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Services\FirebaseNotificationService;
+use Illuminate\Support\Facades\Log;
 
 
 use App\Http\Controllers\CategoryController;
@@ -21,6 +23,7 @@ use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupportController;
 use App\Models\Coordinate;
+use App\Models\DeviceToken;
 
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('comments', CommentController::class);
@@ -80,4 +83,29 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/device-token', [DeviceTokenController::class, 'store']);
     Route::delete('/device-token', [DeviceTokenController::class, 'destroy']);
+});
+
+Route::delete('/admin/tokens/clean-inactive', function () {
+    $inactiveTokens = DeviceToken::where('is_active', false)->count();
+    
+    DeviceToken::where('is_active', false)->delete();
+    
+    return response()->json([
+        'success' => true,
+        'message' => "Tokens inactivos eliminados: $inactiveTokens",
+        'deleted_count' => $inactiveTokens
+    ]);
+});
+
+Route::delete('/admin/tokens/nuke-all', function () {
+    $totalTokens = DeviceToken::count();
+    
+    // Borrado completo
+    DeviceToken::query()->delete();
+        
+    return response()->json([
+        'success' => true,
+        'message' => "🚨 ELIMINADOS TODOS LOS TOKENS ($totalTokens tokens borrados)",
+        'deleted_count' => $totalTokens
+    ]);
 });
