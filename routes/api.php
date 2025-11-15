@@ -23,6 +23,7 @@ use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupportController;
 use App\Models\Coordinate;
+use App\Models\DeviceToken;
 
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('comments', CommentController::class);
