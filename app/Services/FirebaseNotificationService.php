@@ -9,34 +9,36 @@ class FirebaseNotificationService
 {
     protected $fcmUrl;
     protected $projectId;
+    protected $serviceAccount;
 
     public function __construct()
     {
-        $this->projectId = env('FIREBASE_PROJECT_ID', 'geomarket-9e06d');
+        $this->projectId = 'geomarket-9e06d';
         $this->fcmUrl = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
+        
+        // 🔥 CREDENCIALES DIRECTAS EN EL CÓDIGO
+        $this->serviceAccount = [
+            "type" => "service_account",
+            "project_id" => "geomarket-9e06d",
+            "private_key_id" => "8768451f799cc7d297e16361313397ff281e1f3d",
+            "private_key" => "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDEC6krXp+zoE2j\nJ8OBYudlnL4BoJzDdQS1yaY2b8t7D/mseWIjYywTiauyPhg0e149BbSHtWtTa8wN\nvp/0xDRHji+tEhE16Js9KeK1rwFw5Jc+P3Q4/YP4gCgbYNVzyXSVU0S/3CdiyGLQ\nDN1gcbRbe3jwcC3GXMpfZvvo+1/jasrN2d2NKwJz03WEvybBtP8HTpAOPfrdIdAG\nbhNYex4xzglWIH0w90kS0iOwNyHGsq28Y5/ceDBdjL0vA1UAuqHXs687z80YNv9R\nV+sOr2hfcKq7HY78FaBHlgVbwwpRtvmpDJIQoObSfNWttz9KNC/xwGkMmZlMFccc\n1KktjIjRAgMBAAECggEAAsuVhLi5e1W+G6Uez5DH4roTl7l4+Ly5taeXlQu+pY1c\nkovrxTxGEex+6CiEXvWyGhnDaWKx4j9tijXhSRu10N4fMgcZm5iao4puCQgC88+P\nlD+yfhhHxh6aK8tDed5ZySIF/zwR6/G2XnfrfWM7pokF+DwqO+uBZ280CO4yH5+F\nFx5qnZUPTrj+WI/QosRYOh8VUD4ZJvjoO1qSxYglRULVYrqtvhtiovCn9aZfDHn8\nOHKc499kNoa4EeTbz3KGySRgvkWGsDw+2eiTbMi1dziYmiH95B/P2qmPTHClsq8+\nS6Bz/7zYLlCGTasFhqVmLx3k0BrUSgfOYohUdbXdgQKBgQDxXNXn1/38uaGMZruh\nxqxdmJBzbAREXbo5Vw67b6nxYUwogN4zrSDBomSN76UcDxSngItpxLj7tTpXl7gD\nI2qldshrER+Pyg510ve+6RIUNylDLMHpsaRn4QiojE2GaBVOVeBDMZmCMz9IGdeV\nJjPjdMY+C0ck5ac6f+epttEMUQKBgQDP70aSLKTBtRzZIG9wwOQGLJTdPf8usjVP\n5a/03FK6OKt677Z9JaDv5o/13PjFooNPfEnQFI2uSOYsO8siqMYNAoLz2uRNmlZ4\nbn0e+9midghoVRdn0rd/VFcYN6FyxII4c2GPJgcf0GlfKCbo86Z8ZJLESX04xCtH\n12i6WI8UgQKBgEJ8hTwBRqjIZdTsM8GDndWGgjwZRC+k9fh3n8pIHzMrzzPVE+B+\nT2inmDV1DzFkghcGFOFE3IQRzwlz9K+AoQ8FYn4D0ILmcQdJ3w8K2v0QmOA1QxFh\n6tzmo2DyjSR6JWxXwZgg4J16CnONEtK2HFMKxtUufCGQ1XkK5MDeaEWRAoGAInGY\nVw5eHFhL9wuQajUJkJxB7IQgiTOr8RgzFXSJn59TiIG80O4ywoqGvktkShipd7k2\n4OkGryAUQK+G7q7WX8FSv+I6f0BZoolq4H8HhgnXSrENt30IOGdYJgLRE5nJmGBE\ngNnjxDlZuxGDoIL7yQ8/4JPr0kNsh/H+vx98VAECgYAjbAeLWEn9u5S6z3DPQ4at\n10FVTjxK36ejBn+Sywt9dif1PLdo3LBOtaTY68ymucJ8+YEC/DtWQ+i2psoehq1+\nb/OlcQUf2LTbmWzGJpH7UEdGeHEq1beJX0zQ719krAwOkItKxf8rLxGaIWhfBxyK\nfnNAWa7BZAF0FHRPvnGHyQ==\n-----END PRIVATE KEY-----\n",
+            "client_email" => "firebase-adminsdk-fbsvc@geomarket-9e06d.iam.gserviceaccount.com",
+            "client_id" => "116362592394546294446",
+            "auth_uri" => "https://accounts.google.com/o/oauth2/auth",
+            "token_uri" => "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url" => "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40geomarket-9e06d.iam.gserviceaccount.com",
+            "universe_domain" => "googleapis.com"
+        ];
     }
 
     /**
-     * Generar access token usando JWT - VERSIÓN MEJORADA
+     * Generar access token usando JWT
      */
     public function getAccessToken()
     {
         try {
-            $serviceAccountJson = env('GOOGLE_APPLICATION_CREDENTIALS_JSON');
-            
-            if (!$serviceAccountJson) {
-                throw new \Exception("GOOGLE_APPLICATION_CREDENTIALS_JSON no está definida");
-            }
-            
-            $serviceAccount = json_decode($serviceAccountJson, true);
-            
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception("JSON inválido: " . json_last_error_msg());
-            }
-
-            if (!isset($serviceAccount['private_key'])) {
-                throw new \Exception("private_key no encontrada en el JSON");
-            }
+            $serviceAccount = $this->serviceAccount;
 
             $now = time();
             $payload = [
@@ -53,13 +55,9 @@ class FirebaseNotificationService
             $dataToSign = $headerEncoded . '.' . $payloadEncoded;
             
             $privateKey = $serviceAccount['private_key'];
-            
-            // Verificar que la clave privada es válida
-            if (!openssl_sign($dataToSign, $signature, $privateKey, 'SHA256')) {
-                throw new \Exception("Error firmando JWT con openssl_sign");
-            }
-            
+            openssl_sign($dataToSign, $signature, $privateKey, 'SHA256');
             $signatureEncoded = $this->base64UrlEncode($signature);
+            
             $jwt = $dataToSign . '.' . $signatureEncoded;
 
             // Intercambiar JWT por access token
@@ -68,20 +66,15 @@ class FirebaseNotificationService
                 'assertion' => $jwt
             ]);
 
-            if (!$response->successful()) {
-                throw new \Exception("Error OAuth2: " . $response->body());
-            }
-
             $tokenData = $response->json();
-            
-            if (!isset($tokenData['access_token'])) {
-                throw new \Exception("Access token no encontrado en respuesta: " . json_encode($tokenData));
-            }
 
-            return $tokenData['access_token'];
+            if ($response->successful() && isset($tokenData['access_token'])) {
+                return $tokenData['access_token'];
+            } else {
+                throw new \Exception("Error obteniendo access token: " . json_encode($tokenData));
+            }
 
         } catch (\Exception $e) {
-            // No logueamos, lanzamos la excepción para que la capture la ruta de prueba
             throw new \Exception("Error en getAccessToken: " . $e->getMessage());
         }
     }
@@ -92,7 +85,7 @@ class FirebaseNotificationService
     }
 
     /**
-     * Enviar notificación a un usuario - VERSIÓN MEJORADA
+     * Enviar notificación a un usuario
      */
     public function sendToUser($userId, $title, $body, $data = [])
     {
@@ -127,7 +120,7 @@ class FirebaseNotificationService
     }
 
     /**
-     * Enviar notificación a un token específico - VERSIÓN MEJORADA
+     * Enviar notificación a un token específico
      */
     public function sendToToken($token, $title, $body, $data = [], $accessToken = null)
     {
@@ -143,7 +136,10 @@ class FirebaseNotificationService
                         'title' => $title,
                         'body' => $body
                     ],
-                    'data' => $data
+                    'data' => $data,
+                    'android' => [
+                        'priority' => 'high'
+                    ]
                 ]
             ];
 

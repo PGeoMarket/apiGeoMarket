@@ -85,51 +85,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/device-token', [DeviceTokenController::class, 'destroy']);
 });
 
-Route::get('/test-firebase-debug', function () {
+Route::get('/test-firebase-direct', function () {
     $debugInfo = [];
-    $userId = 4; // El usuario que mencionaste
+    $userId = 4;
     
-    $debugInfo[] = "🧪 INICIANDO PRUEBA DE FIREBASE DEBUG";
+    $debugInfo[] = "🧪 PRUEBA CON CREDENCIALES DIRECTAS";
     $debugInfo[] = "Usuario ID: " . $userId;
-    
-    // 1. Verificar variables de entorno
-    $debugInfo[] = "🔍 VARIABLES DE ENTORNO:";
-    $debugInfo[] = "FIREBASE_PROJECT_ID: " . (env('FIREBASE_PROJECT_ID') ?: 'NO DEFINIDO');
-    $credentialsJson = env('GOOGLE_APPLICATION_CREDENTIALS_JSON');
-    $debugInfo[] = "GOOGLE_APPLICATION_CREDENTIALS_JSON: " . ($credentialsJson ? "DEFINIDA (" . strlen($credentialsJson) . " chars)" : 'NO DEFINIDA');
-    
-    if ($credentialsJson) {
-        $debugInfo[] = "📄 PRIMEROS 50 CHARS: " . substr($credentialsJson, 0, 50) . "...";
-        
-        // Verificar JSON
-        $jsonCheck = json_decode($credentialsJson, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            $debugInfo[] = "❌ JSON INVÁLIDO: " . json_last_error_msg();
-        } else {
-            $debugInfo[] = "✅ JSON VÁLIDO";
-            $debugInfo[] = "📧 Client Email: " . ($jsonCheck['client_email'] ?? 'NO ENCONTRADO');
-            $debugInfo[] = "🔑 Private Key: " . (isset($jsonCheck['private_key']) ? 'PRESENTE' : 'FALTANTE');
-        }
-    }
-    
-    // 2. Verificar tokens del usuario
-    $debugInfo[] = "🔍 VERIFICANDO TOKENS DEL USUARIO {$userId}:";
-    $tokens = DeviceToken::where('user_id', $userId)
-        ->where('is_active', true)
-        ->get();
-    
-    $debugInfo[] = "Tokens encontrados: " . $tokens->count();
-    
-    foreach ($tokens as $index => $token) {
-        $debugInfo[] = "Token " . ($index + 1) . ": " . substr($token->fcm_token, 0, 20) . "...";
-        $debugInfo[] = "Plataforma: " . $token->platform . ", Activo: " . $token->is_active;
-    }
-    
-    // 3. Probar el servicio Firebase
-    $debugInfo[] = "🚀 PROBANDO SERVICIO FIREBASE:";
     
     try {
         $service = new FirebaseNotificationService();
+        
+        $debugInfo[] = "✅ Servicio inicializado con credenciales directas";
+        $debugInfo[] = "📧 Client Email: firebase-adminsdk-fbsvc@geomarket-9e06d.iam.gserviceaccount.com";
         
         // Probar generación de token
         $debugInfo[] = "🔄 Generando access token...";
@@ -142,29 +109,37 @@ Route::get('/test-firebase-debug', function () {
             $debugInfo[] = "📤 Enviando notificación...";
             $result = $service->sendToUser(
                 $userId,
-                '🔔 Prueba Debug Railway',
-                'Esta es una notificación de prueba con debug',
-                ['debug' => 'true', 'test_id' => uniqid()]
+                '🔔 Prueba Credenciales Directas',
+                '¡Funciona! Notificación con credenciales en código',
+                ['test' => 'direct_credentials', 'timestamp' => now()->toISOString()]
             );
             
-            $debugInfo[] = "📦 Resultado del envío: " . ($result ? 'ÉXITO' : 'FALLO');
+            $debugInfo[] = "📦 Resultado: " . ($result ? 'ÉXITO 🎉' : 'FALLO ❌');
+            
+            return response()->json([
+                'success' => $result,
+                'debug_info' => $debugInfo,
+                'user_id' => $userId,
+                'message' => $result ? 'Notificación enviada exitosamente' : 'Error al enviar notificación'
+            ]);
             
         } else {
             $debugInfo[] = "❌ NO se pudo generar access token";
+            return response()->json([
+                'success' => false,
+                'debug_info' => $debugInfo,
+                'error' => 'No se pudo generar access token'
+            ]);
         }
         
     } catch (Exception $e) {
         $debugInfo[] = "💥 EXCEPCIÓN: " . $e->getMessage();
-        $debugInfo[] = "📋 Trace: " . $e->getFile() . ":" . $e->getLine();
+        
+        return response()->json([
+            'success' => false,
+            'debug_info' => $debugInfo,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
     }
-    
-    $debugInfo[] = "🎯 PRUEBA COMPLETADA";
-    
-    return response()->json([
-        'success' => isset($result) ? $result : false,
-        'debug_info' => $debugInfo,
-        'user_id' => $userId,
-        'tokens_count' => $tokens->count(),
-        'timestamp' => now()->toISOString()
-    ]);
 });
