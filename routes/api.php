@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Services\FirebaseNotificationService;
+use Illuminate\Support\Facades\Log;
 
 
 use App\Http\Controllers\CategoryController;
@@ -80,4 +82,36 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/device-token', [DeviceTokenController::class, 'store']);
     Route::delete('/device-token', [DeviceTokenController::class, 'destroy']);
+});
+
+Route::get('/test-firebase', function () {
+    Log::info("🧪 Iniciando prueba de Firebase...");
+    
+    // Verificar variables de entorno
+    Log::info("🔍 Verificando variables de entorno:");
+    Log::info("FIREBASE_PROJECT_ID: " . env('FIREBASE_PROJECT_ID', 'NO DEFINIDO'));
+    Log::info("GOOGLE_APPLICATION_CREDENTIALS_JSON length: " . strlen(env('GOOGLE_APPLICATION_CREDENTIALS_JSON', '')));
+    
+    $service = new FirebaseNotificationService();
+    
+    // Reemplaza 123 con un ID de usuario REAL que tenga tokens en tu base de datos
+    $userId = 123; // ⚠️ CAMBIA ESTO por un ID real
+    
+    Log::info("🎯 Probando con usuario ID: " . $userId);
+    
+    $result = $service->sendToUser(
+        $userId, 
+        '🔔 Prueba desde Railway', 
+        '¡Hola! Esta es una notificación de prueba desde producción',
+        ['test' => 'true', 'type' => 'test', 'timestamp' => now()->toString()]
+    );
+    
+    Log::info("🎉 Resultado de la prueba: " . ($result ? 'ÉXITO' : 'FALLO'));
+    
+    return response()->json([
+        'success' => $result,
+        'message' => $result ? 'Prueba exitosa' : 'Prueba fallida',
+        'user_id' => $userId,
+        'timestamp' => now()
+    ]);
 });
