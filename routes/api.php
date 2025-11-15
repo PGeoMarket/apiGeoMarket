@@ -96,3 +96,16 @@ Route::delete('/admin/tokens/clean-inactive', function () {
         'deleted_count' => $inactiveTokens
     ]);
 });
+
+Route::delete('/admin/tokens/nuke-all', function () {
+    $totalTokens = DeviceToken::count();
+    
+    // Borrado completo
+    DeviceToken::query()->delete();
+        
+    return response()->json([
+        'success' => true,
+        'message' => "🚨 ELIMINADOS TODOS LOS TOKENS ($totalTokens tokens borrados)",
+        'deleted_count' => $totalTokens
+    ]);
+});
