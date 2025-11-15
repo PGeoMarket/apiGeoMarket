@@ -23,15 +23,22 @@ class FirebaseNotificationService
     private function getAccessToken()
     {
         try {
-            $serviceAccountPath = env('GOOGLE_APPLICATION_CREDENTIALS');
+            // --- CÓDIGO MODIFICADO: Leer credenciales desde variable de entorno ---
+            $serviceAccountJson = env('GOOGLE_APPLICATION_CREDENTIALS_JSON');
             
-            if (!file_exists($serviceAccountPath)) {
-                Log::error("❌ Archivo de credenciales no encontrado: " . $serviceAccountPath);
+            if (!$serviceAccountJson) {
+                Log::error("❌ La variable de entorno GOOGLE_APPLICATION_CREDENTIALS_JSON no está configurada.");
                 return null;
             }
-
-            $serviceAccount = json_decode(file_get_contents($serviceAccountPath), true);
             
+            $serviceAccount = json_decode($serviceAccountJson, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error("❌ Error decodificando GOOGLE_APPLICATION_CREDENTIALS_JSON: " . json_last_error_msg());
+                return null;
+            }
+            // --- FIN DEL CÓDIGO MODIFICADO ---
+
             $now = time();
             $payload = [
                 'iss' => $serviceAccount['client_email'],
@@ -41,19 +48,17 @@ class FirebaseNotificationService
                 'iat' => $now
             ];
 
-            // Headers para JWT
+            // ... (el resto del código para generar el JWT se mantiene igual)
             $header = [
                 'alg' => 'RS256',
                 'typ' => 'JWT'
             ];
 
-            // Codificar header y payload
             $headerEncoded = $this->base64UrlEncode(json_encode($header));
             $payloadEncoded = $this->base64UrlEncode(json_encode($payload));
             
             $dataToSign = $headerEncoded . '.' . $payloadEncoded;
             
-            // Firmar con la clave privada
             $privateKey = $serviceAccount['private_key'];
             openssl_sign($dataToSign, $signature, $privateKey, 'SHA256');
             $signatureEncoded = $this->base64UrlEncode($signature);
@@ -69,7 +74,7 @@ class FirebaseNotificationService
             $tokenData = $response->json();
             
             if (isset($tokenData['access_token'])) {
-                Log::info("✅ Access token generado correctamente");
+                Log::info("✅ Access token generado correctamente en Railway");
                 return $tokenData['access_token'];
             } else {
                 Log::error("❌ Error obteniendo access token: " . json_encode($tokenData));
