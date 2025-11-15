@@ -84,34 +84,86 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/device-token', [DeviceTokenController::class, 'destroy']);
 });
 
-Route::get('/test-firebase', function () {
-    Log::info("🧪 Iniciando prueba de Firebase...");
+Route::get('/test-firebase-debug', function () {
+    $debugInfo = [];
+    $userId = 4; // El usuario que mencionaste
     
-    // Verificar variables de entorno
-    Log::info("🔍 Verificando variables de entorno:");
-    Log::info("FIREBASE_PROJECT_ID: " . env('FIREBASE_PROJECT_ID', 'NO DEFINIDO'));
-    Log::info("GOOGLE_APPLICATION_CREDENTIALS_JSON length: " . strlen(env('GOOGLE_APPLICATION_CREDENTIALS_JSON', '')));
+    $debugInfo[] = "🧪 INICIANDO PRUEBA DE FIREBASE DEBUG";
+    $debugInfo[] = "Usuario ID: " . $userId;
     
-    $service = new FirebaseNotificationService();
+    // 1. Verificar variables de entorno
+    $debugInfo[] = "🔍 VARIABLES DE ENTORNO:";
+    $debugInfo[] = "FIREBASE_PROJECT_ID: " . (env('FIREBASE_PROJECT_ID') ?: 'NO DEFINIDO');
+    $credentialsJson = env('GOOGLE_APPLICATION_CREDENTIALS_JSON');
+    $debugInfo[] = "GOOGLE_APPLICATION_CREDENTIALS_JSON: " . ($credentialsJson ? "DEFINIDA (" . strlen($credentialsJson) . " chars)" : 'NO DEFINIDA');
     
-    // Reemplaza 123 con un ID de usuario REAL que tenga tokens en tu base de datos
-    $userId = 4; // ⚠️ CAMBIA ESTO por un ID real
+    if ($credentialsJson) {
+        $debugInfo[] = "📄 PRIMEROS 50 CHARS: " . substr($credentialsJson, 0, 50) . "...";
+        
+        // Verificar JSON
+        $jsonCheck = json_decode($credentialsJson, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $debugInfo[] = "❌ JSON INVÁLIDO: " . json_last_error_msg();
+        } else {
+            $debugInfo[] = "✅ JSON VÁLIDO";
+            $debugInfo[] = "📧 Client Email: " . ($jsonCheck['client_email'] ?? 'NO ENCONTRADO');
+            $debugInfo[] = "🔑 Private Key: " . (isset($jsonCheck['private_key']) ? 'PRESENTE' : 'FALTANTE');
+        }
+    }
     
-    Log::info("🎯 Probando con usuario ID: " . $userId);
+    // 2. Verificar tokens del usuario
+    $debugInfo[] = "🔍 VERIFICANDO TOKENS DEL USUARIO {$userId}:";
+    $tokens = DeviceToken::where('user_id', $userId)
+        ->where('is_active', true)
+        ->get();
     
-    $result = $service->sendToUser(
-        $userId, 
-        '🔔 Prueba desde Railway', 
-        '¡Hola! Esta es una notificación de prueba desde producción',
-        ['test' => 'true', 'type' => 'test', 'timestamp' => now()->toString()]
-    );
+    $debugInfo[] = "Tokens encontrados: " . $tokens->count();
     
-    Log::info("🎉 Resultado de la prueba: " . ($result ? 'ÉXITO' : 'FALLO'));
+    foreach ($tokens as $index => $token) {
+        $debugInfo[] = "Token " . ($index + 1) . ": " . substr($token->fcm_token, 0, 20) . "...";
+        $debugInfo[] = "Plataforma: " . $token->platform . ", Activo: " . $token->is_active;
+    }
+    
+    // 3. Probar el servicio Firebase
+    $debugInfo[] = "🚀 PROBANDO SERVICIO FIREBASE:";
+    
+    try {
+        $service = new FirebaseNotificationService();
+        
+        // Probar generación de token
+        $debugInfo[] = "🔄 Generando access token...";
+        $accessToken = $service->getAccessToken();
+        
+        if ($accessToken) {
+            $debugInfo[] = "✅ Access token generado: " . substr($accessToken, 0, 20) . "...";
+            
+            // Enviar notificación real
+            $debugInfo[] = "📤 Enviando notificación...";
+            $result = $service->sendToUser(
+                $userId,
+                '🔔 Prueba Debug Railway',
+                'Esta es una notificación de prueba con debug',
+                ['debug' => 'true', 'test_id' => uniqid()]
+            );
+            
+            $debugInfo[] = "📦 Resultado del envío: " . ($result ? 'ÉXITO' : 'FALLO');
+            
+        } else {
+            $debugInfo[] = "❌ NO se pudo generar access token";
+        }
+        
+    } catch (Exception $e) {
+        $debugInfo[] = "💥 EXCEPCIÓN: " . $e->getMessage();
+        $debugInfo[] = "📋 Trace: " . $e->getFile() . ":" . $e->getLine();
+    }
+    
+    $debugInfo[] = "🎯 PRUEBA COMPLETADA";
     
     return response()->json([
-        'success' => $result,
-        'message' => $result ? 'Prueba exitosa' : 'Prueba fallida',
+        'success' => isset($result) ? $result : false,
+        'debug_info' => $debugInfo,
         'user_id' => $userId,
-        'timestamp' => now()
+        'tokens_count' => $tokens->count(),
+        'timestamp' => now()->toISOString()
     ]);
 });

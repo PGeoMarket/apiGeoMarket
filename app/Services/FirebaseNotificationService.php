@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\DeviceToken;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class FirebaseNotificationService
 {
@@ -18,26 +17,26 @@ class FirebaseNotificationService
     }
 
     /**
-     * Generar access token usando JWT
+     * Generar access token usando JWT - VERSIÓN MEJORADA
      */
-    private function getAccessToken()
+    public function getAccessToken()
     {
         try {
-            // --- CÓDIGO MODIFICADO: Leer credenciales desde variable de entorno ---
             $serviceAccountJson = env('GOOGLE_APPLICATION_CREDENTIALS_JSON');
             
             if (!$serviceAccountJson) {
-                Log::error("❌ La variable de entorno GOOGLE_APPLICATION_CREDENTIALS_JSON no está configurada.");
-                return null;
+                throw new \Exception("GOOGLE_APPLICATION_CREDENTIALS_JSON no está definida");
             }
             
             $serviceAccount = json_decode($serviceAccountJson, true);
             
             if (json_last_error() !== JSON_ERROR_NONE) {
-                Log::error("❌ Error decodificando GOOGLE_APPLICATION_CREDENTIALS_JSON: " . json_last_error_msg());
-                return null;
+                throw new \Exception("JSON inválido: " . json_last_error_msg());
             }
-            // --- FIN DEL CÓDIGO MODIFICADO ---
+
+            if (!isset($serviceAccount['private_key'])) {
+                throw new \Exception("private_key no encontrada en el JSON");
+            }
 
             $now = time();
             $payload = [
@@ -48,42 +47,42 @@ class FirebaseNotificationService
                 'iat' => $now
             ];
 
-            // ... (el resto del código para generar el JWT se mantiene igual)
-            $header = [
-                'alg' => 'RS256',
-                'typ' => 'JWT'
-            ];
-
+            $header = ['alg' => 'RS256', 'typ' => 'JWT'];
             $headerEncoded = $this->base64UrlEncode(json_encode($header));
             $payloadEncoded = $this->base64UrlEncode(json_encode($payload));
-            
             $dataToSign = $headerEncoded . '.' . $payloadEncoded;
             
             $privateKey = $serviceAccount['private_key'];
-            openssl_sign($dataToSign, $signature, $privateKey, 'SHA256');
-            $signatureEncoded = $this->base64UrlEncode($signature);
             
+            // Verificar que la clave privada es válida
+            if (!openssl_sign($dataToSign, $signature, $privateKey, 'SHA256')) {
+                throw new \Exception("Error firmando JWT con openssl_sign");
+            }
+            
+            $signatureEncoded = $this->base64UrlEncode($signature);
             $jwt = $dataToSign . '.' . $signatureEncoded;
 
             // Intercambiar JWT por access token
-            $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+            $response = Http::asForm()->timeout(10)->post('https://oauth2.googleapis.com/token', [
                 'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
                 'assertion' => $jwt
             ]);
 
-            $tokenData = $response->json();
-            
-            if (isset($tokenData['access_token'])) {
-                Log::info("✅ Access token generado correctamente en Railway");
-                return $tokenData['access_token'];
-            } else {
-                Log::error("❌ Error obteniendo access token: " . json_encode($tokenData));
-                return null;
+            if (!$response->successful()) {
+                throw new \Exception("Error OAuth2: " . $response->body());
             }
 
+            $tokenData = $response->json();
+            
+            if (!isset($tokenData['access_token'])) {
+                throw new \Exception("Access token no encontrado en respuesta: " . json_encode($tokenData));
+            }
+
+            return $tokenData['access_token'];
+
         } catch (\Exception $e) {
-            Log::error("❌ Error generando access token: " . $e->getMessage());
-            return null;
+            // No logueamos, lanzamos la excepción para que la capture la ruta de prueba
+            throw new \Exception("Error en getAccessToken: " . $e->getMessage());
         }
     }
 
@@ -93,13 +92,11 @@ class FirebaseNotificationService
     }
 
     /**
-     * Enviar notificación a un usuario
+     * Enviar notificación a un usuario - VERSIÓN MEJORADA
      */
     public function sendToUser($userId, $title, $body, $data = [])
     {
         try {
-            Log::info("🔔 Intentando enviar notificación a usuario: $userId - Titulo: '$title'");
-
             // Obtener tokens del usuario
             $tokens = DeviceToken::where('user_id', $userId)
                 ->where('is_active', true)
@@ -107,16 +104,12 @@ class FirebaseNotificationService
                 ->toArray();
 
             if (empty($tokens)) {
-                Log::info("❌ Usuario $userId no tiene tokens FCM activos");
-                return false;
+                throw new \Exception("Usuario $userId no tiene tokens FCM activos");
             }
-
-            Log::info("📱 Tokens encontrados para usuario $userId: " . count($tokens));
 
             $accessToken = $this->getAccessToken();
             if (!$accessToken) {
-                Log::error("❌ No se pudo obtener access token");
-                return false;
+                throw new \Exception("No se pudo obtener access token");
             }
 
             $successCount = 0;
@@ -126,28 +119,21 @@ class FirebaseNotificationService
                 }
             }
 
-            Log::info("✅ Notificaciones enviadas a usuario $userId: $successCount éxitos de " . count($tokens));
             return $successCount > 0;
 
         } catch (\Exception $e) {
-            Log::error("❌ Error enviando notificación FCM: " . $e->getMessage());
-            return false;
+            throw new \Exception("Error en sendToUser: " . $e->getMessage());
         }
     }
 
     /**
-     * Enviar notificación a un token específico
+     * Enviar notificación a un token específico - VERSIÓN MEJORADA
      */
     public function sendToToken($token, $title, $body, $data = [], $accessToken = null)
     {
         try {
             if (!$accessToken) {
                 $accessToken = $this->getAccessToken();
-            }
-
-            if (!$accessToken) {
-                Log::error("❌ No hay access token disponible");
-                return false;
             }
 
             $payload = [
@@ -157,14 +143,9 @@ class FirebaseNotificationService
                         'title' => $title,
                         'body' => $body
                     ],
-                    'data' => $data,
-                    'android' => [
-                        'priority' => 'high'
-                    ]
+                    'data' => $data
                 ]
             ];
-
-            Log::info("📤 Enviando payload FCM v1: " . json_encode($payload));
 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $accessToken,
@@ -172,21 +153,15 @@ class FirebaseNotificationService
             ])->timeout(15)->post($this->fcmUrl, $payload);
 
             $result = $response->json();
-            $statusCode = $response->status();
-
-            Log::info("📥 Respuesta FCM - Status: $statusCode, Response: " . json_encode($result));
 
             if ($response->successful()) {
-                Log::info("✅ Notificación FCM v1 enviada correctamente");
                 return true;
             } else {
-                Log::error("❌ Error FCM v1 - Status: $statusCode, Error: " . json_encode($result));
-                return false;
+                throw new \Exception("FCM Error - Status: " . $response->status() . ", Response: " . json_encode($result));
             }
 
         } catch (\Exception $e) {
-            Log::error("❌ Excepción enviando notificación FCM v1: " . $e->getMessage());
-            return false;
+            throw new \Exception("Error en sendToToken: " . $e->getMessage());
         }
     }
 }
