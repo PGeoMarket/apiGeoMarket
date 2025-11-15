@@ -150,7 +150,7 @@ Route::get('/test-noti-simple', function () {
     
     // Usuario 4 (como en tu prueba)
     $result = $service->sendNotification(
-        4,
+        15,
         '🔥 NOTIFICACIÓN DE PRUEBA',
         '¡Esta debería funcionar!',
         ['test' => 'simple', 'time' => now()->toISOString()]
