@@ -17,7 +17,7 @@ class DeviceTokenController extends Controller
         $request->validate([
             'device_id' => 'required|string',
             'fcm_token' => 'required|string',
-            'platform' => 'required|in:android,ios'
+            'platform' => 'required|in:android,ios,web'
         ]);
 
         $user =Auth::user();
