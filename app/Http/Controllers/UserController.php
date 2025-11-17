@@ -195,11 +195,18 @@ class UserController extends Controller
     // Favoritos de un usuario
     public function favoritos($id)
     {
-        $usuario = User::with(['favoritePublications.image','favoritePublications.category'])->findOrFail($id);
-
-        return response()->json($usuario->favoritePublications);
+    $usuario = User::findOrFail($id);
+    
+    $favoritos = $usuario->favoritePublications()
+        ->where('visibilidad', true)
+        ->included()
+        ->filter()
+        ->sort()
+        ->with(['image', 'category'])
+        ->getOrPaginate();
+    
+    return response()->json($favoritos);
     }
-
 
     public function toggleFavorito(Request $request, $userId)
     {
