@@ -262,12 +262,11 @@ class UserController extends Controller
     // Obtener los IDs de las publicaciones favoritas
     $favoritoIds = $usuario->favoritePublications()->pluck('publications.id');
     
-    // Ahora sí puedes usar los scopes de Publication
     $favoritos = Publication::whereIn('id', $favoritoIds)
         ->select('publications.*')
         ->with(['image', 'category'])
-        ->filter()   // ✅ Ahora sí funciona
-        ->sort()     // ✅ Ahora sí funciona
+        ->filter()
+        ->sort()     
         ->getOrPaginate();
     
     return response()->json($favoritos);
