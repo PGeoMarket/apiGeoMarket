@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Models\Image;
 use App\Models\Coordinate;
+use App\Models\Publication;
 
 class UserController extends Controller
 {
@@ -258,9 +259,15 @@ class UserController extends Controller
 {
     $usuario = User::findOrFail($id);
     
-    $favoritos = $usuario->favoritePublications()
-        ->select('publications.*')  // ✅ FORZAR solo columnas de publications
+    // Obtener los IDs de las publicaciones favoritas
+    $favoritoIds = $usuario->favoritePublications()->pluck('publications.id');
+    
+    // Ahora sí puedes usar los scopes de Publication
+    $favoritos = Publication::whereIn('id', $favoritoIds)
+        ->select('publications.*')
         ->with(['image', 'category'])
+        ->filter()   // ✅ Ahora sí funciona
+        ->sort()     // ✅ Ahora sí funciona
         ->getOrPaginate();
     
     return response()->json($favoritos);
