@@ -198,7 +198,6 @@ class UserController extends Controller
     $usuario = User::findOrFail($id);
     
     $favoritos = $usuario->favoritePublications()
-        ->where('visibilidad', true)
         ->included()
         ->filter()
         ->sort()
