@@ -133,15 +133,15 @@ class PublicationController extends Controller
     }
 
     public function favoritos($userId)
-{
+    {
     $usuario = User::findOrFail($userId);
     
     $favoritos = $usuario->favoritePublications()
-        ->included()
+        ->with(['image', 'category'])
         ->filter()
         ->sort()
         ->getOrPaginate();
     
     return response()->json($favoritos);
-}
+    }
 }
