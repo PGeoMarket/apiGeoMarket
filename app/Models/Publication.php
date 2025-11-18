@@ -98,7 +98,7 @@ protected $allowSort = [
         return $this->morphMany(Report::class, 'reportable');
     }
     
-    public function imageable()
+    public function image()
 {
     return $this->morphTo('imageable', 'imageable_type', 'imageable_id');
 }
