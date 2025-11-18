@@ -259,17 +259,16 @@ class UserController extends Controller
 {
     $usuario = User::findOrFail($id);
     
-    // Obtener los IDs de las publicaciones favoritas
+    // ✅ Especificar la tabla en whereIn
     $favoritoIds = $usuario->favoritePublications()->pluck('publications.id');
     
-    $favoritos = Publication::whereIn('id', $favoritoIds)
+    $favoritos = Publication::whereIn('publications.id', $favoritoIds)  // ← Cambio aquí
         ->select('publications.*')
         ->with(['image', 'category'])
         ->filter()
-        ->sort()     
+        ->sort()
         ->getOrPaginate();
     
     return response()->json($favoritos);
 }
-
 }
