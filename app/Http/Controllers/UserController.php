@@ -253,4 +253,20 @@ class UserController extends Controller
             'active' => $user->activo // Debería ser true
         ]);
     }
+
+    public function favoritos($id)
+{
+    $usuario = User::findOrFail($id);
+    
+    // Usar la relación COMO QUERY BUILDER, no como relación cargada
+    $favoritos = $usuario->favoritePublications() // ← Esto devuelve un QueryBuilder
+        ->with(['image', 'category']) // ← Eager loading normal
+        ->included()  // ← Tus scopes personalizados
+        ->filter()
+        ->sort()
+        ->getOrPaginate();
+    
+    return response()->json($favoritos);
+    }
+
 }

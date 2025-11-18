@@ -6,7 +6,6 @@ use App\Models\Publication;
 use Illuminate\Http\Request;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Models\Image;
-use App\Models\User;
 
 class PublicationController extends Controller
 {
@@ -132,16 +131,5 @@ class PublicationController extends Controller
         ], 400);
     }
 
-    public function favoritos($userId)
-    {
-    $usuario = User::findOrFail($userId);
-    
-    $favoritos = $usuario->favoritePublications()
-        ->with(['image', 'category'])
-        ->filter()
-        ->sort()
-        ->getOrPaginate();
-    
-    return response()->json($favoritos);
-    }
+
 }
