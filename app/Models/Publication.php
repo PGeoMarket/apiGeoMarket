@@ -248,17 +248,17 @@ protected $allowSort = [
     }
 
     // Fórmula Haversine
-    $haversine = "(6371 * acos(cos(radians(?)) 
+    $haversine = "(6371 * acos(cos(radians({$userLat})) 
                   * cos(radians(coordinates.latitud)) 
-                  * cos(radians(coordinates.longitud) - radians(?)) 
-                  + sin(radians(?)) 
+                  * cos(radians(coordinates.longitud) - radians({$userLon})) 
+                  + sin(radians({$userLat})) 
                   * sin(radians(coordinates.latitud))))";
 
     $sellerClass = 'App\\Models\\Seller';
     
-    // ✅ Verificar si ya existe el join para evitar duplicados
+    // Verificar si ya existe el join
     $hasJoin = collect($query->getQuery()->joins ?? [])->contains(function($join) {
-        return strpos($join->table, 'coordinates') !== false;
+        return strpos($join->table ?? '', 'coordinates') !== false;
     });
     
     if (!$hasJoin) {
@@ -268,14 +268,15 @@ protected $allowSort = [
         });
     }
     
-    // ✅ Verificar si ya existe la columna distance
-    $selectColumns = $query->getQuery()->columns ?? [];
-    $hasDistance = collect($selectColumns)->contains(function($column) {
-        return is_string($column) && strpos($column, 'distance') !== false;
-    });
+    // ✅ FORZAR el select completo
+    $currentSelects = $query->getQuery()->columns;
     
-    if (!$hasDistance) {
-        $query->selectRaw("{$haversine} AS distance", [$userLat, $userLon, $userLat]);
+    if (empty($currentSelects) || in_array('*', $currentSelects)) {
+        // Si no hay select específico o es *, agregar todos los campos
+        $query->select('publications.*', DB::raw("{$haversine} AS distance"));
+    } else {
+        // Si ya hay selects específicos, agregar distance
+        $query->addSelect(DB::raw("{$haversine} AS distance"));
     }
 
     if ($maxDistance) {
