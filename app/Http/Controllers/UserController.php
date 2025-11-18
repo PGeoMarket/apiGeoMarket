@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Models\Image;
 use App\Models\Coordinate;
+use App\Models\Publication;
 
 class UserController extends Controller
 {
@@ -193,20 +194,6 @@ class UserController extends Controller
     }
 
     // Favoritos de un usuario
-    public function favoritos($id)
-    {
-    $usuario = User::findOrFail($id);
-    
-    $favoritos = $usuario->favoritePublications()
-        ->where('visibilidad', true)
-        ->included()
-        ->filter()
-        ->sort()
-        ->with(['image', 'category'])
-        ->getOrPaginate();
-    
-    return response()->json($favoritos);
-    }
 
     public function toggleFavorito(Request $request, $userId)
     {
@@ -267,4 +254,22 @@ class UserController extends Controller
             'active' => $user->activo // Debería ser true
         ]);
     }
+
+    public function favoritos($id)
+{
+    $usuario = User::findOrFail($id);
+    
+    // Obtener los IDs de las publicaciones favoritas
+    $favoritoIds = $usuario->favoritePublications()->pluck('publications.id');
+    
+    $favoritos = Publication::whereIn('id', $favoritoIds)
+        ->select('publications.*')
+        ->with(['image', 'category'])
+        ->filter()
+        ->sort()     
+        ->getOrPaginate();
+    
+    return response()->json($favoritos);
+}
+
 }
