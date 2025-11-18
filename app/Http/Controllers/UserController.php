@@ -258,14 +258,12 @@ class UserController extends Controller
 {
     $usuario = User::findOrFail($id);
     
-    // Usar la relación COMO QUERY BUILDER, no como relación cargada
-    $favoritos = $usuario->favoritePublications() // ← Esto devuelve un QueryBuilder
-        ->with(['image', 'category']) // ← Eager loading normal
-        ->filter()
-        ->sort()
+    $favoritos = $usuario->favoritePublications()
+        ->select('publications.*')  // ✅ FORZAR solo columnas de publications
+        ->with(['image', 'category'])
         ->getOrPaginate();
     
     return response()->json($favoritos);
-    }
+}
 
 }
