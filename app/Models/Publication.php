@@ -98,10 +98,10 @@ protected $allowSort = [
         return $this->morphMany(Report::class, 'reportable');
     }
     
-    public function image()
-    {
-        return $this->morphOne(Image::class, 'imageable_id');
-    }
+    public function imageable()
+{
+    return $this->morphTo('imageable', 'imageable_type', 'imageable_id');
+}
 
 
     public function chats() {
