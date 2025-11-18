@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 
 class Publication extends Model
 {
@@ -141,25 +142,26 @@ protected $allowSort = [
     foreach ($filters as $filter => $value) {
         if ($allowFilter->contains($filter)) {
             if ($filter === 'precio_min') {
-                $query->where('precio', '>=', (float) $value);
+                $query->where('publications.precio', '>=', (float) $value);  // ✅
             } elseif ($filter === 'precio_max') {
-                $query->where('precio', '<=', (float) $value);
+                $query->where('publications.precio', '<=', (float) $value);  // ✅
             } elseif (in_array($filter, ['user_lat', 'user_lon', 'max_distance'])) {
-                continue; // Se manejan después
+                continue;
             } else {
-                $query->where($filter, 'LIKE', '%'. $value . '%');
+                // ✅ Especificar tabla
+                $query->where('publications.' . $filter, 'LIKE', '%'. $value . '%');
             }
         }
     }
 
-    // Aplicar filtro de distancia UNA SOLA VEZ
+    // Aplicar filtro de distancia
     $userLat = $filters['user_lat'] ?? null;
     $userLon = $filters['user_lon'] ?? null;
     
     if ($userLat && $userLon) {
         $this->applyDistanceCalculation($query, null, $filters['max_distance'] ?? null);
     }
-    }
+}
 
 
     public function scopeSort(Builder $query)
@@ -186,15 +188,16 @@ protected $allowSort = [
                 $userLon = $filters['user_lon'] ?? null;
                 
                 if ($userLat && $userLon) {
-                    // Solo ordenar, no volver a aplicar joins
+                    // ✅ Solo ordenar por distance
                     $query->orderBy('distance', $direction);
                 }
             } else {
-                $query->orderBy($sortField, $direction);
+                // ✅ Especificar la tabla para evitar ambigüedad
+                $query->orderBy('publications.' . $sortField, $direction);  
             }
         }
     }
-    }
+}
 //
     public function scopeGetOrPaginate(Builder $query)
     {
@@ -245,26 +248,42 @@ protected $allowSort = [
     }
 
     // Fórmula Haversine
-    $haversine = "(6371 * acos(cos(radians(?)) 
+    $haversine = "(6371 * acos(cos(radians({$userLat})) 
                   * cos(radians(coordinates.latitud)) 
-                  * cos(radians(coordinates.longitud) - radians(?)) 
-                  + sin(radians(?)) 
+                  * cos(radians(coordinates.longitud) - radians({$userLon})) 
+                  + sin(radians({$userLat})) 
                   * sin(radians(coordinates.latitud))))";
 
     $sellerClass = 'App\\Models\\Seller';
     
-    $query->join('coordinates', function($join) use ($sellerClass) {
+    // Verificar si ya existe el join
+    $hasJoin = collect($query->getQuery()->joins ?? [])->contains(function($join) {
+        return strpos($join->table ?? '', 'coordinates') !== false;
+    });
+    
+    if (!$hasJoin) {
+        $query->join('coordinates', function($join) use ($sellerClass) {
             $join->on('publications.seller_id', '=', 'coordinates.coordinateable_id')
                  ->where('coordinates.coordinateable_type', '=', $sellerClass);
-        })
-        ->select('publications.*')
-        ->selectRaw("{$haversine} AS distance", [$userLat, $userLon, $userLat]);
+        });
+    }
+    
+    // ✅ FORZAR el select completo
+    $currentSelects = $query->getQuery()->columns;
+    
+    if (empty($currentSelects) || in_array('*', $currentSelects)) {
+        // Si no hay select específico o es *, agregar todos los campos
+        $query->select('publications.*', DB::raw("{$haversine} AS distance"));
+    } else {
+        // Si ya hay selects específicos, agregar distance
+        $query->addSelect(DB::raw("{$haversine} AS distance"));
+    }
 
     if ($maxDistance) {
         $query->having('distance', '<=', (float) $maxDistance);
     }
 
     return $query;
-    }
+}
         
 }
