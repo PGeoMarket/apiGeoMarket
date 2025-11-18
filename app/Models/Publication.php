@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 
 class Publication extends Model
 {
@@ -141,13 +142,13 @@ protected $allowSort = [
     foreach ($filters as $filter => $value) {
         if ($allowFilter->contains($filter)) {
             if ($filter === 'precio_min') {
-                $query->where('precio', '>=', (float) $value);
+                $query->where('publications.precio', '>=', (float) $value);  // ← Cambio
             } elseif ($filter === 'precio_max') {
-                $query->where('precio', '<=', (float) $value);
+                $query->where('publications.precio', '<=', (float) $value);  // ← Cambio
             } elseif (in_array($filter, ['user_lat', 'user_lon', 'max_distance'])) {
                 continue; // Se manejan después
             } else {
-                $query->where($filter, 'LIKE', '%'. $value . '%');
+                $query->where('publications.' . $filter, 'LIKE', '%'. $value . '%');  // ← Cambio
             }
         }
     }
@@ -159,7 +160,7 @@ protected $allowSort = [
     if ($userLat && $userLon) {
         $this->applyDistanceCalculation($query, null, $filters['max_distance'] ?? null);
     }
-    }
+}
 
 
     public function scopeSort(Builder $query)
@@ -257,14 +258,17 @@ protected $allowSort = [
             $join->on('publications.seller_id', '=', 'coordinates.coordinateable_id')
                  ->where('coordinates.coordinateable_type', '=', $sellerClass);
         })
-        ->select('publications.*')
-        ->selectRaw("{$haversine} AS distance", [$userLat, $userLon, $userLat]);
+        
+        ->addSelect(DB::raw("{$haversine} AS distance"));
+    
+    // Bind parameters manualmente
+    $query->addBinding([$userLat, $userLon, $userLat], 'select');
 
     if ($maxDistance) {
         $query->having('distance', '<=', (float) $maxDistance);
     }
 
     return $query;
-    }
+}
         
 }
