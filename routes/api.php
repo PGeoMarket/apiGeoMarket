@@ -40,7 +40,7 @@ Route::apiResource('images', ImageController::class);
 
 //rutas del usuario y favoritos
 Route::apiResource('users', UserController::class);
-Route::get('publications/favorites', [PublicationController::class, 'favoritos']);
+Route::get('publications/favorites/{user_id}', [PublicationController::class, 'favoritos']);
 Route::patch('users/{userId}/favorites/toggle', [UserController::class, 'toggleFavorito']);
 
 
