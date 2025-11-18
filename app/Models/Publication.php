@@ -142,18 +142,19 @@ protected $allowSort = [
     foreach ($filters as $filter => $value) {
         if ($allowFilter->contains($filter)) {
             if ($filter === 'precio_min') {
-                $query->where('publications.precio', '>=', (float) $value);  // ← Cambio
+                $query->where('publications.precio', '>=', (float) $value);  // ✅
             } elseif ($filter === 'precio_max') {
-                $query->where('publications.precio', '<=', (float) $value);  // ← Cambio
+                $query->where('publications.precio', '<=', (float) $value);  // ✅
             } elseif (in_array($filter, ['user_lat', 'user_lon', 'max_distance'])) {
-                continue; // Se manejan después
+                continue;
             } else {
-                $query->where('publications.' . $filter, 'LIKE', '%'. $value . '%');  // ← Cambio
+                // ✅ Especificar tabla
+                $query->where('publications.' . $filter, 'LIKE', '%'. $value . '%');
             }
         }
     }
 
-    // Aplicar filtro de distancia UNA SOLA VEZ
+    // Aplicar filtro de distancia
     $userLat = $filters['user_lat'] ?? null;
     $userLon = $filters['user_lon'] ?? null;
     
@@ -187,15 +188,16 @@ protected $allowSort = [
                 $userLon = $filters['user_lon'] ?? null;
                 
                 if ($userLat && $userLon) {
-                    // Solo ordenar, no volver a aplicar joins
+                    // ✅ Solo ordenar por distance
                     $query->orderBy('distance', $direction);
                 }
             } else {
-                $query->orderBy($sortField, $direction);
+                // ✅ Especificar la tabla para evitar ambigüedad
+                $query->orderBy('publications.' . $sortField, $direction);  
             }
         }
     }
-    }
+}
 //
     public function scopeGetOrPaginate(Builder $query)
     {
@@ -254,15 +256,27 @@ protected $allowSort = [
 
     $sellerClass = 'App\\Models\\Seller';
     
-    $query->join('coordinates', function($join) use ($sellerClass) {
+    // ✅ Verificar si ya existe el join para evitar duplicados
+    $hasJoin = collect($query->getQuery()->joins ?? [])->contains(function($join) {
+        return strpos($join->table, 'coordinates') !== false;
+    });
+    
+    if (!$hasJoin) {
+        $query->join('coordinates', function($join) use ($sellerClass) {
             $join->on('publications.seller_id', '=', 'coordinates.coordinateable_id')
                  ->where('coordinates.coordinateable_type', '=', $sellerClass);
-        })
-        
-        ->addSelect(DB::raw("{$haversine} AS distance"));
+        });
+    }
     
-    // Bind parameters manualmente
-    $query->addBinding([$userLat, $userLon, $userLat], 'select');
+    // ✅ Verificar si ya existe la columna distance
+    $selectColumns = $query->getQuery()->columns ?? [];
+    $hasDistance = collect($selectColumns)->contains(function($column) {
+        return is_string($column) && strpos($column, 'distance') !== false;
+    });
+    
+    if (!$hasDistance) {
+        $query->selectRaw("{$haversine} AS distance", [$userLat, $userLon, $userLat]);
+    }
 
     if ($maxDistance) {
         $query->having('distance', '<=', (float) $maxDistance);
