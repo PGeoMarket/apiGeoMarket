@@ -42,9 +42,9 @@ class Image extends Model
     ];
 
     public function imageable()
-    {
-        return $this->morphTo();
-    }
+{
+    return $this->morphTo('imageable', 'imageable_type', 'imageable_id');
+}
 
     public function scopeIncluded(Builder $query)
     {

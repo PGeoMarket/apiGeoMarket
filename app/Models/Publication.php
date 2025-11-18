@@ -99,9 +99,9 @@ protected $allowSort = [
     }
     
     public function image()
-{
-    return $this->morphTo('imageable', 'imageable_type', 'imageable_id');
-}
+    {
+        return $this->morphOne(Image::class, 'imageable');
+    }
 
 
     public function chats() {
