@@ -261,7 +261,6 @@ class UserController extends Controller
     // Usar la relación COMO QUERY BUILDER, no como relación cargada
     $favoritos = $usuario->favoritePublications() // ← Esto devuelve un QueryBuilder
         ->with(['image', 'category']) // ← Eager loading normal
-        ->included()  // ← Tus scopes personalizados
         ->filter()
         ->sort()
         ->getOrPaginate();
