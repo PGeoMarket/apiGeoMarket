@@ -245,17 +245,27 @@ class User extends Authenticatable
     }
 
     public function suspendPermanently()
-    {
-        return $this->update([
-            'activo' => false,
-            'suspended_until' => null // limpiar suspensión temporal
-        ]);
+{
+    // Ocultar todas las publicaciones del usuario
+    if ($this->seller) {
+        $this->seller->publications()->update(['visibilidad' => false]);
     }
+    
+    return $this->update([
+        'activo' => false,
+        'suspended_until' => null
+    ]);
+}
     public function unsuspend()
-    {
-        return $this->update([
-            'activo' => true,
-            'suspended_until' => null
-        ]);
+{
+    // Reactivar publicaciones si existe el seller
+    if ($this->seller) {
+        $this->seller->publications()->update(['visibilidad' => true]);
     }
+    
+    return $this->update([
+        'activo' => true,
+        'suspended_until' => null
+    ]);
+}
 }
