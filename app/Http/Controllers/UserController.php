@@ -233,14 +233,14 @@ class UserController extends Controller
      * Suspender usuario definitivamente
      */
     public function suspendPermanently(User $user)
-    {
-        $user->suspendPermanently();
+{
+    $user->suspendPermanently();
 
-        return response()->json([
-            'message' => 'Usuario suspendido definitivamente.',
-            'active' => $user->activo // Debería ser false
-        ]);
-    }
+    return response()->json([
+        'message' => 'Usuario suspendido definitivamente y publicaciones ocultadas.',
+        'active' => $user->activo
+    ]);
+}
 
     /**
      * Reactivar usuario
