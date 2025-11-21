@@ -248,7 +248,7 @@ class User extends Authenticatable
 {
     // Ocultar todas las publicaciones del usuario
     if ($this->seller) {
-        $this->seller->publications()->update(['activo' => false]);
+        $this->seller->publications()->update(['visibilidad' => false]);
     }
     
     return $this->update([
@@ -260,7 +260,7 @@ class User extends Authenticatable
 {
     // Reactivar publicaciones si existe el seller
     if ($this->seller) {
-        $this->seller->publications()->update(['activo' => true]);
+        $this->seller->publications()->update(['visibilidad' => true]);
     }
     
     return $this->update([
