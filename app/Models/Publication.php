@@ -56,7 +56,8 @@ protected $allowFilter = [
     'precio_max',
     'user_lat',
     'user_lon',        
-    'max_distance'
+    'max_distance',
+    'categories'
 ];
 
 // Campos por los que se puede ordenar
@@ -131,37 +132,66 @@ protected $allowSort = [
     }
 
     public function scopeFilter(Builder $query)
-{
-    if (empty($this->allowFilter) || empty(request("filter"))) {
-        return;
-    }
+    {
+        if (empty($this->allowFilter) || empty(request("filter"))) {
+            return;
+        }
 
-    $filters = request('filter');
-    $allowFilter = collect($this->allowFilter);
+        $filters = request('filter');
+        $allowFilter = collect($this->allowFilter);
 
-    foreach ($filters as $filter => $value) {
-        if ($allowFilter->contains($filter)) {
-            if ($filter === 'precio_min') {
-                $query->where('publications.precio', '>=', (float) $value);  // ✅
-            } elseif ($filter === 'precio_max') {
-                $query->where('publications.precio', '<=', (float) $value);  // ✅
-            } elseif (in_array($filter, ['user_lat', 'user_lon', 'max_distance'])) {
-                continue;
-            } else {
-                // ✅ Especificar tabla
-                $query->where('publications.' . $filter, 'LIKE', '%'. $value . '%');
+        foreach ($filters as $filter => $value) {
+            if ($allowFilter->contains($filter)) {
+                // ✅ Filtro por categoría(s) - soporta una o múltiples
+                if ($filter === 'category_id') {
+                    // Detectar si viene con comas (múltiples categorías)
+                    if (is_string($value) && strpos($value, ',') !== false) {
+                        $categoryIds = explode(',', $value);
+                        $categoryIds = array_map('trim', $categoryIds); // Limpiar espacios
+                        $query->whereIn('publications.category_id', $categoryIds);
+                    } 
+                    // Array de categorías
+                    elseif (is_array($value)) {
+                        $query->whereIn('publications.category_id', $value);
+                    }
+                    // Categoría única
+                    else {
+                        $query->where('publications.category_id', $value);
+                    }
+                }
+                // Filtro alternativo por múltiples categorías
+                elseif ($filter === 'categories') {
+                    $categoryIds = is_array($value) ? $value : explode(',', $value);
+                    $categoryIds = array_map('trim', $categoryIds);
+                    $query->whereIn('publications.category_id', $categoryIds);
+                }
+                // Filtro precio mínimo
+                elseif ($filter === 'precio_min') {
+                    $query->where('publications.precio', '>=', (float) $value);
+                }
+                // Filtro precio máximo
+                elseif ($filter === 'precio_max') {
+                    $query->where('publications.precio', '<=', (float) $value);
+                }
+                // Ignorar parámetros de ubicación (se procesan después)
+                elseif (in_array($filter, ['user_lat', 'user_lon', 'max_distance'])) {
+                    continue;
+                }
+                // Filtro genérico tipo LIKE
+                else {
+                    $query->where('publications.' . $filter, 'LIKE', '%'. $value . '%');
+                }
             }
         }
-    }
 
-    // Aplicar filtro de distancia
-    $userLat = $filters['user_lat'] ?? null;
-    $userLon = $filters['user_lon'] ?? null;
-    
-    if ($userLat && $userLon) {
-        $this->applyDistanceCalculation($query, null, $filters['max_distance'] ?? null);
+        // Aplicar filtro de distancia si hay coordenadas
+        $userLat = $filters['user_lat'] ?? null;
+        $userLon = $filters['user_lon'] ?? null;
+        
+        if ($userLat && $userLon) {
+            $this->applyDistanceCalculation($query, null, $filters['max_distance'] ?? null);
+        }
     }
-}
 
 
     public function scopeSort(Builder $query)

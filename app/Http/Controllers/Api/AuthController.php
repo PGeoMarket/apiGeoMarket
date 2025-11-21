@@ -120,7 +120,7 @@ class AuthController extends Controller
         if ($user->suspended_until && $user->suspended_until > now()) {
             $days_remaining = now()->diffInHours($user->suspended_until);
             throw ValidationException::withMessages([
-                'email' => ["Tu cuenta está suspendida temporalmente. Disponible en {$days_remaining} horas."],
+                'email' => ["Cuenta suspendida temporalmente. {$days_remaining} horas."],
             ]);
         }
         

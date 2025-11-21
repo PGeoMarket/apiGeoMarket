@@ -213,28 +213,28 @@ class User extends Authenticatable
         return $query->get();
     }
     public function isSuspended()
-    {
-        // Verificar suspensión temporal activa
-        if ($this->suspended_until && $this->suspended_until > now()) {
-            return true;
-        }
-        
-        // Si la suspensión temporal expiró, reactivar automáticamente
-        if ($this->suspended_until && $this->suspended_until <= now()) {
-            $this->update([
-                'activo' => true,
-                'suspended_until' => null
-            ]);
-            return false;
-        }
-        
-        // Suspensión definitiva
-        if ($this->activo === false) {
-            return true;
-        }
-        
+{
+    // Verificar suspensión temporal activa
+    if ($this->suspended_until && $this->suspended_until > now()) {
+        return true;
+    }
+    
+    // Si la suspensión temporal expiró, reactivar automáticamente
+    if ($this->suspended_until && $this->suspended_until <= now()) {
+        $this->update([
+            'activo' => true,
+            'suspended_until' => null
+        ]);
         return false;
     }
+    
+    // ✅ CORRECCIÓN DEFINITIVA: Cualquier valor que no sea "true"
+    if (!$this->activo) {
+        return true;
+    }
+    
+    return false;
+}
 
     public function suspendTemporarily($days = 7)
     {
