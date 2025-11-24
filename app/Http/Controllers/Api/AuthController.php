@@ -115,12 +115,23 @@ class AuthController extends Controller
         }
 
         // Verificar que el usuario esté activo
-        if ($user->isSuspended()) {
+        // Verificar que el usuario esté activo
+    if ($user->isSuspended()) {
         // Si está suspendido temporalmente
         if ($user->suspended_until && $user->suspended_until > now()) {
-            $days_remaining = now()->diffInHours($user->suspended_until);
+            // ✅ SOLUCIÓN: Redondear a máximo 2 dígitos
+            $hours_remaining = now()->diffInHours($user->suspended_until);
+            
+            // Si son más de 99 horas, mostrar días en lugar de horas
+            if ($hours_remaining > 99) {
+                $days_remaining = now()->diffInDays($user->suspended_until);
+                $message = "Tu cuenta está suspendida temporalmente. Disponible en {$days_remaining} días.";
+            } else {
+                $message = "Tu cuenta está suspendida temporalmente. Disponible en {$hours_remaining} horas.";
+            }
+            
             throw ValidationException::withMessages([
-                'email' => ["Cuenta suspendida temporalmente. {$days_remaining} horas."],
+                'email' => [$message],
             ]);
         }
         
