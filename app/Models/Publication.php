@@ -55,7 +55,7 @@ protected $allowFilter = [
     'precio_min',
     'precio_max',
     'user_lat',
-    'user_lon',        
+    'user_lon',
     'max_distance',
     'categories'
 ];
@@ -99,7 +99,7 @@ protected $allowSort = [
     {
         return $this->morphMany(Report::class, 'reportable');
     }
-    
+
     public function image()
     {
         return $this->morphOne(Image::class, 'imageable');
@@ -149,7 +149,7 @@ protected $allowSort = [
                         $categoryIds = explode(',', $value);
                         $categoryIds = array_map('trim', $categoryIds); // Limpiar espacios
                         $query->whereIn('publications.category_id', $categoryIds);
-                    } 
+                    }
                     // Array de categorías
                     elseif (is_array($value)) {
                         $query->whereIn('publications.category_id', $value);
@@ -187,7 +187,7 @@ protected $allowSort = [
         // Aplicar filtro de distancia si hay coordenadas
         $userLat = $filters['user_lat'] ?? null;
         $userLon = $filters['user_lon'] ?? null;
-        
+
         if ($userLat && $userLon) {
             $this->applyDistanceCalculation($query, null, $filters['max_distance'] ?? null);
         }
@@ -216,14 +216,14 @@ protected $allowSort = [
                 $filters = request('filter');
                 $userLat = $filters['user_lat'] ?? null;
                 $userLon = $filters['user_lon'] ?? null;
-                
+
                 if ($userLat && $userLon) {
                     // ✅ Solo ordenar por distance
                     $query->orderBy('distance', $direction);
                 }
             } else {
                 // ✅ Especificar la tabla para evitar ambigüedad
-                $query->orderBy('publications.' . $sortField, $direction);  
+                $query->orderBy('publications.' . $sortField, $direction);
             }
         }
     }
@@ -231,10 +231,11 @@ protected $allowSort = [
 //
     public function scopeGetOrPaginate(Builder $query)
     {
+        // ✅ AGREGAR: Distinct para evitar duplicados
+        $query->distinct();
 
         if (request('perPage')) {
             $perPage = intval(request('perPage'));
-
             if ($perPage) {
                 return $query->paginate($perPage);
             }
@@ -249,7 +250,7 @@ protected $allowSort = [
     private function applyDistanceFilter(Builder $query)
     {
         $filters = request('filter');
-        
+
         $userLat = $filters['user_lat'] ?? null;
         $userLon = $filters['user_lon'] ?? null;
         $maxDistance = $filters['max_distance'] ?? null;
@@ -269,7 +270,7 @@ protected $allowSort = [
     private function applyDistanceCalculation(Builder $query, $direction = null, $maxDistance = null)
 {
     $filters = request('filter');
-    
+
     $userLat = $filters['user_lat'] ?? null;
     $userLon = $filters['user_lon'] ?? null;
 
@@ -278,29 +279,29 @@ protected $allowSort = [
     }
 
     // Fórmula Haversine
-    $haversine = "(6371 * acos(cos(radians({$userLat})) 
-                  * cos(radians(coordinates.latitud)) 
-                  * cos(radians(coordinates.longitud) - radians({$userLon})) 
-                  + sin(radians({$userLat})) 
+    $haversine = "(6371 * acos(cos(radians({$userLat}))
+                  * cos(radians(coordinates.latitud))
+                  * cos(radians(coordinates.longitud) - radians({$userLon}))
+                  + sin(radians({$userLat}))
                   * sin(radians(coordinates.latitud))))";
 
     $sellerClass = 'App\\Models\\Seller';
-    
+
     // Verificar si ya existe el join
     $hasJoin = collect($query->getQuery()->joins ?? [])->contains(function($join) {
         return strpos($join->table ?? '', 'coordinates') !== false;
     });
-    
+
     if (!$hasJoin) {
         $query->join('coordinates', function($join) use ($sellerClass) {
             $join->on('publications.seller_id', '=', 'coordinates.coordinateable_id')
                  ->where('coordinates.coordinateable_type', '=', $sellerClass);
         });
     }
-    
+
     // ✅ FORZAR el select completo
     $currentSelects = $query->getQuery()->columns;
-    
+
     if (empty($currentSelects) || in_array('*', $currentSelects)) {
         // Si no hay select específico o es *, agregar todos los campos
         $query->select('publications.*', DB::raw("{$haversine} AS distance"));
@@ -315,5 +316,5 @@ protected $allowSort = [
 
     return $query;
 }
-        
+
 }
