@@ -46,6 +46,8 @@ Route::patch('users/{userId}/favorites/toggle', [UserController::class, 'toggleF
 
 Route::get('orm/test-all', [ORMController::class, 'testAllRelations']);
 Route::get('orm/test-polymorphic', [ORMController::class, 'testPolymorphicRelations']);
+Route::delete('/device-token', [DeviceTokenController::class, 'destroy']);
+
 
 
 Route::post('/support', [SupportController::class, 'store']);
