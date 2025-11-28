@@ -20,59 +20,59 @@ class Publication extends Model
         'category_id',
         'puntuacion_promedio'
     ];
-  // Relaciones que se pueden incluir
-protected $allowIncluded = [
-    'seller',
-    'seller.user',
-    'seller.user.role',
-    'seller.phones',
-    'seller.coordinate',
-    'seller.image',
-    'category',
-    'comments',
-    'comments.user',
-    'comments.user.role',
-    'reports',
-    'reports.user',
-    'reports.reason',
-    'image',
-    'usersWhoFavorited',
-    'usersWhoFavorited.role'
-];
+    // Relaciones que se pueden incluir
+    protected $allowIncluded = [
+        'seller',
+        'seller.user',
+        'seller.user.role',
+        'seller.phones',
+        'seller.coordinate',
+        'seller.image',
+        'category',
+        'comments',
+        'comments.user',
+        'comments.user.role',
+        'reports',
+        'reports.user',
+        'reports.reason',
+        'image',
+        'usersWhoFavorited',
+        'usersWhoFavorited.role'
+    ];
 
-// Campos por los que se puede filtrar
-protected $allowFilter = [
-    'id',
-    'titulo',
-    'precio',
-    'descripcion',
-    'visibilidad',
-    'seller_id',
-    'category_id',
-    'created_at',
-    'updated_at',
-    'puntuacion_promedio',
-    'precio_min',
-    'precio_max',
-    'user_lat',
-    'user_lon',
-    'max_distance',
-    'categories'
-];
+    // Campos por los que se puede filtrar
+    protected $allowFilter = [
+        'id',
+        'titulo',
+        'precio',
+        'descripcion',
+        'visibilidad',
+        'seller_id',
+        'category_id',
+        'created_at',
+        'updated_at',
+        'puntuacion_promedio',
+        'precio_min',
+        'precio_max',
+        'user_lat',
+        'user_lon',
+        'max_distance',
+        'categories'
+    ];
 
-// Campos por los que se puede ordenar
-protected $allowSort = [
-    'id',
-    'titulo',
-    'precio',
-    'visibilidad',
-    'seller_id',
-    'category_id',
-    'created_at',
-    'updated_at',
-    'puntuacion_promedio',
-    'distance'
-];
+    // Campos por los que se puede ordenar
+    protected $allowSort = [
+        'id',
+        'titulo',
+        'precio',
+        'visibilidad',
+        'seller_id',
+        'category_id',
+        'created_at',
+        'updated_at',
+        'puntuacion_promedio',
+        'distance'
+    ];
 
     //Relaciones
     public function seller()
@@ -106,7 +106,8 @@ protected $allowSort = [
     }
 
 
-    public function chats() {
+    public function chats()
+    {
         return $this->hasMany(Chat::class);
     }
 
@@ -179,7 +180,13 @@ protected $allowSort = [
                 }
                 // Filtro genérico tipo LIKE
                 else {
-                    $query->where('publications.' . $filter, 'LIKE', '%'. $value . '%');
+                    // Si el valor es numérico, usar igualdad exacta
+                    if (is_numeric($value)) {
+                        $query->where('publications.' . $filter, $value);
+                    } else {
+                        // Solo usar LIKE para campos de texto
+                        $query->where('publications.' . $filter, 'LIKE', '%' . $value . '%');
+                    }
                 }
             }
         }
@@ -195,40 +202,40 @@ protected $allowSort = [
 
 
     public function scopeSort(Builder $query)
-{
-    if (empty($this->allowSort) || empty(request("sort"))) {
-        return;
-    }
-
-    $sortFields = explode(',', request('sort'));
-    $allowSort = collect($this->allowSort);
-
-    foreach ($sortFields as $sortField) {
-        $direction = 'asc';
-        if (substr($sortField, 0, 1) === "-") {
-            $direction = 'desc';
-            $sortField = substr($sortField, 1);
+    {
+        if (empty($this->allowSort) || empty(request("sort"))) {
+            return;
         }
 
-        if ($allowSort->contains($sortField)) {
-            if ($sortField === 'distance') {
-                // Verificar si ya se aplicó el cálculo de distancia
-                $filters = request('filter');
-                $userLat = $filters['user_lat'] ?? null;
-                $userLon = $filters['user_lon'] ?? null;
+        $sortFields = explode(',', request('sort'));
+        $allowSort = collect($this->allowSort);
 
-                if ($userLat && $userLon) {
-                    // ✅ Solo ordenar por distance
-                    $query->orderBy('distance', $direction);
+        foreach ($sortFields as $sortField) {
+            $direction = 'asc';
+            if (substr($sortField, 0, 1) === "-") {
+                $direction = 'desc';
+                $sortField = substr($sortField, 1);
+            }
+
+            if ($allowSort->contains($sortField)) {
+                if ($sortField === 'distance') {
+                    // Verificar si ya se aplicó el cálculo de distancia
+                    $filters = request('filter');
+                    $userLat = $filters['user_lat'] ?? null;
+                    $userLon = $filters['user_lon'] ?? null;
+
+                    if ($userLat && $userLon) {
+                        // ✅ Solo ordenar por distance
+                        $query->orderBy('distance', $direction);
+                    }
+                } else {
+                    // ✅ Especificar la tabla para evitar ambigüedad
+                    $query->orderBy('publications.' . $sortField, $direction);
                 }
-            } else {
-                // ✅ Especificar la tabla para evitar ambigüedad
-                $query->orderBy('publications.' . $sortField, $direction);
             }
         }
     }
-}
-//
+    //
     public function scopeGetOrPaginate(Builder $query)
     {
         // ✅ AGREGAR: Distinct para evitar duplicados
@@ -268,53 +275,52 @@ protected $allowSort = [
      * Aplicar cálculo de distancia (Fórmula Haversine)
      */
     private function applyDistanceCalculation(Builder $query, $direction = null, $maxDistance = null)
-{
-    $filters = request('filter');
+    {
+        $filters = request('filter');
 
-    $userLat = $filters['user_lat'] ?? null;
-    $userLon = $filters['user_lon'] ?? null;
+        $userLat = $filters['user_lat'] ?? null;
+        $userLon = $filters['user_lon'] ?? null;
 
-    if (!$userLat || !$userLon) {
-        return $query;
-    }
+        if (!$userLat || !$userLon) {
+            return $query;
+        }
 
-    // Fórmula Haversine
-    $haversine = "(6371 * acos(cos(radians({$userLat}))
+        // Fórmula Haversine
+        $haversine = "(6371 * acos(cos(radians({$userLat}))
                   * cos(radians(coordinates.latitud))
                   * cos(radians(coordinates.longitud) - radians({$userLon}))
                   + sin(radians({$userLat}))
                   * sin(radians(coordinates.latitud))))";
 
-    $sellerClass = 'App\\Models\\Seller';
+        $sellerClass = 'App\\Models\\Seller';
 
-    // Verificar si ya existe el join
-    $hasJoin = collect($query->getQuery()->joins ?? [])->contains(function($join) {
-        return strpos($join->table ?? '', 'coordinates') !== false;
-    });
-
-    if (!$hasJoin) {
-        $query->join('coordinates', function($join) use ($sellerClass) {
-            $join->on('publications.seller_id', '=', 'coordinates.coordinateable_id')
-                 ->where('coordinates.coordinateable_type', '=', $sellerClass);
+        // Verificar si ya existe el join
+        $hasJoin = collect($query->getQuery()->joins ?? [])->contains(function ($join) {
+            return strpos($join->table ?? '', 'coordinates') !== false;
         });
+
+        if (!$hasJoin) {
+            $query->join('coordinates', function ($join) use ($sellerClass) {
+                $join->on('publications.seller_id', '=', 'coordinates.coordinateable_id')
+                    ->where('coordinates.coordinateable_type', '=', $sellerClass);
+            });
+        }
+
+        // ✅ FORZAR el select completo
+        $currentSelects = $query->getQuery()->columns;
+
+        if (empty($currentSelects) || in_array('*', $currentSelects)) {
+            // Si no hay select específico o es *, agregar todos los campos
+            $query->select('publications.*', DB::raw("{$haversine} AS distance"));
+        } else {
+            // Si ya hay selects específicos, agregar distance
+            $query->addSelect(DB::raw("{$haversine} AS distance"));
+        }
+
+        if ($maxDistance) {
+            $query->having('distance', '<=', (float) $maxDistance);
+        }
+
+        return $query;
     }
-
-    // ✅ FORZAR el select completo
-    $currentSelects = $query->getQuery()->columns;
-
-    if (empty($currentSelects) || in_array('*', $currentSelects)) {
-        // Si no hay select específico o es *, agregar todos los campos
-        $query->select('publications.*', DB::raw("{$haversine} AS distance"));
-    } else {
-        // Si ya hay selects específicos, agregar distance
-        $query->addSelect(DB::raw("{$haversine} AS distance"));
-    }
-
-    if ($maxDistance) {
-        $query->having('distance', '<=', (float) $maxDistance);
-    }
-
-    return $query;
-}
-
 }
